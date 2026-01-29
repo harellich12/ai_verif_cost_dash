@@ -1,5 +1,5 @@
 import { CalculationResult } from '../constants';
-import { formatCurrency, formatPercent } from '../utils/calculations';
+import { formatCurrency, formatPercent } from '../utils/format';
 import { TrendingUp, TrendingDown, Target, ShieldCheck, DollarSign, Calendar } from 'lucide-react';
 
 interface KPICardsProps {

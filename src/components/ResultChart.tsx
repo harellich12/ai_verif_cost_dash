@@ -10,7 +10,7 @@ import {
     ReferenceLine,
 } from 'recharts';
 import { CalculationResult } from '../constants';
-import { formatCurrency } from '../utils/calculations';
+import { formatCurrency } from '../utils/format';
 
 interface ResultChartProps {
     result: CalculationResult;

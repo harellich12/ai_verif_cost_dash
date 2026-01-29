@@ -1,5 +1,5 @@
 import { CalculatorInputs, CalculationResult, CONSTANTS } from '../constants';
-import { formatCurrency } from '../utils/calculations';
+import { formatCurrency } from '../utils/format';
 import { TrendingUp, AlertTriangle, Lightbulb, ArrowRight } from 'lucide-react';
 
 interface ExecutiveSummaryProps {
@@ -70,16 +70,16 @@ export function ExecutiveSummary({ inputs, result }: ExecutiveSummaryProps) {
 
     return (
         <div className={`rounded-2xl overflow-hidden transition-all duration-300 ${recommendation.isPositive
-                ? 'bg-gradient-to-br from-emerald-900/40 via-emerald-900/20 to-slate-900/80 ring-1 ring-emerald-500/30'
-                : 'bg-gradient-to-br from-amber-900/40 via-amber-900/20 to-slate-900/80 ring-1 ring-amber-500/30'
+            ? 'bg-gradient-to-br from-emerald-900/40 via-emerald-900/20 to-slate-900/80 ring-1 ring-emerald-500/30'
+            : 'bg-gradient-to-br from-amber-900/40 via-amber-900/20 to-slate-900/80 ring-1 ring-amber-500/30'
             }`}>
             {/* Header */}
             <div className={`px-6 py-4 border-b ${recommendation.isPositive ? 'border-emerald-500/20' : 'border-amber-500/20'
                 }`}>
                 <div className="flex items-center gap-3">
                     <div className={`p-2.5 rounded-xl ${recommendation.isPositive
-                            ? 'bg-emerald-500/20 ring-1 ring-emerald-500/30'
-                            : 'bg-amber-500/20 ring-1 ring-amber-500/30'
+                        ? 'bg-emerald-500/20 ring-1 ring-emerald-500/30'
+                        : 'bg-amber-500/20 ring-1 ring-amber-500/30'
                         }`}>
                         {recommendation.isPositive
                             ? <TrendingUp className="w-5 h-5 text-emerald-400" />
@@ -129,8 +129,8 @@ export function ExecutiveSummary({ inputs, result }: ExecutiveSummaryProps) {
                         Based on {inputs.numEngineers} engineers, {inputs.numGPUs} GPUs, {inputs.aiEfficiencyGain}% efficiency gain
                     </span>
                     <span className={`text-xs font-medium px-2 py-1 rounded-full ${recommendation.isPositive
-                            ? 'bg-emerald-500/20 text-emerald-400'
-                            : 'bg-amber-500/20 text-amber-400'
+                        ? 'bg-emerald-500/20 text-emerald-400'
+                        : 'bg-amber-500/20 text-amber-400'
                         }`}>
                         {recommendation.isPositive ? '✓ Recommended' : '⚠ Review Required'}
                     </span>
