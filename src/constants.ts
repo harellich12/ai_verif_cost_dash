@@ -118,6 +118,7 @@ export interface CalculatorInputs {
     bugReductionWithAI: number;    // percentage
     deploymentStrategy: DeploymentStrategy;  // V2: cloud, onprem, or hybrid
     onPremPercent: number;         // V2: 0-100, used when hybrid
+    includeTaxDepreciation: boolean; // V2: Toggle for tax credit
 }
 
 export interface MonthlyData {
@@ -162,5 +163,6 @@ export function getDefaultInputs(): CalculatorInputs {
         bugReductionWithAI: INPUT_CONFIGS.bugReductionWithAI.default,
         deploymentStrategy: 'cloud',  // Default to cloud-only
         onPremPercent: INPUT_CONFIGS.onPremPercent.default,
+        includeTaxDepreciation: true, // Default to including tax credit
     };
 }

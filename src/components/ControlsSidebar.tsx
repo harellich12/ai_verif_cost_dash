@@ -137,6 +137,7 @@ export function ControlsSidebar({ inputs, onInputChange, onReset }: ControlsSide
                         </div>
 
                         {/* Conditional Hybrid Slider */}
+                        {/* Conditional Hybrid Slider */}
                         {inputs.deploymentStrategy === 'hybrid' && (
                             <div className="mt-3 pt-3 border-t border-slate-700/50">
                                 <ControlSlider
@@ -151,13 +152,32 @@ export function ControlsSidebar({ inputs, onInputChange, onReset }: ControlsSide
                             </div>
                         )}
 
+                        {/* Tax Depreciation Toggle */}
+                        {inputs.deploymentStrategy !== 'cloud' && (
+                            <div className="mt-3 pt-3 border-t border-slate-700/50 flex items-center justify-between">
+                                <div className="flex items-center gap-2">
+                                    <span className="text-xs text-slate-300">Include Tax Depreciation</span>
+                                    <span className="text-[10px] text-slate-500">(21% Credit)</span>
+                                </div>
+                                <button
+                                    onClick={() => onInputChange('includeTaxDepreciation', !inputs.includeTaxDepreciation)}
+                                    className={`w-8 h-4 rounded-full transition-colors duration-200 relative ${inputs.includeTaxDepreciation ? 'bg-emerald-500' : 'bg-slate-700'
+                                        }`}
+                                    title="Toggle Depreciation Tax Credit"
+                                >
+                                    <div className={`absolute top-0.5 left-0.5 w-3 h-3 bg-white rounded-full transition-transform duration-200 ${inputs.includeTaxDepreciation ? 'translate-x-4' : 'translate-x-0'
+                                        }`} />
+                                </button>
+                            </div>
+                        )}
+
                         {/* Cost Summary */}
                         <div className="mt-3 pt-3 border-t border-slate-700/50 text-[10px] text-slate-500">
                             {inputs.deploymentStrategy === 'cloud' && (
                                 <span>💨 Cloud: $3/hr × utilization (scales with usage)</span>
                             )}
                             {inputs.deploymentStrategy === 'onprem' && (
-                                <span>🏢 On-Prem: $30K/GPU + power (fixed cost)</span>
+                                <span>🏢 On-Prem: $30K/GPU + power {inputs.includeTaxDepreciation ? '- tax credit ' : ''}(fixed)</span>
                             )}
                             {inputs.deploymentStrategy === 'hybrid' && (
                                 <span>⚡ Hybrid: {inputs.onPremPercent}% On-Prem, {100 - inputs.onPremPercent}% Cloud Burst</span>

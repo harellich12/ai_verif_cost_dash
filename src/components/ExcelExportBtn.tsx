@@ -64,6 +64,11 @@ export function ExcelExportBtn({ inputs }: ExcelExportBtnProps) {
         ws['B13'] = { t: 'n', v: inputs.onPremPercent / 100 };  // B13 = On-Prem fraction
         ws['C13'] = { t: 's', v: '% (as decimal, used in Hybrid mode)' };
 
+        // V2: Include Tax Depreciation (0=No, 1=Yes)
+        ws['A14'] = { t: 's', v: 'Include Tax Depreciation' };
+        ws['B14'] = { t: 'n', v: inputs.includeTaxDepreciation ? 1 : 0 };  // B14 = Toggle
+        ws['C14'] = { t: 's', v: '1 = Apply 21% Tax Credit, 0 = No Credit' };
+
         // === CONSTANTS (fixed values) ===
         ws['A15'] = { t: 's', v: '=== CONSTANTS ===' };
         ws['A16'] = { t: 's', v: 'Constant' };
@@ -139,10 +144,10 @@ export function ExcelExportBtn({ inputs }: ExcelExportBtnProps) {
         ws['C36'] = { t: 's', v: 'GPUs × Fraction × kW × PUE × Hours × $/kWh' };
 
         // V2: Tax Credit (monthly)
-        // =B35*B26
+        // =B35*B26*B14
         ws['A37'] = { t: 's', v: 'Monthly Tax Credit ($)' };
-        ws['B37'] = { t: 'n', f: 'B35*B26' };
-        ws['C37'] = { t: 's', v: 'On-Prem Hardware Cost × Tax Rate' };
+        ws['B37'] = { t: 'n', f: 'B35*B26*B14' };
+        ws['C37'] = { t: 's', v: 'On-Prem Hardware Cost × Tax Rate × Toggle' };
 
         // V2: Cloud Cost (monthly, scales with utilization)
         // =B7*B34*B17*B24*B9

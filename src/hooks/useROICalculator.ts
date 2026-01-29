@@ -55,6 +55,7 @@ export function useROICalculator(): UseROICalculatorReturn {
             bugReductionWithAI,
             deploymentStrategy,
             onPremPercent,
+            includeTaxDepreciation,
         } = inputs;
 
         // Convert percentages to decimals
@@ -89,7 +90,10 @@ export function useROICalculator(): UseROICalculatorReturn {
 
         // V2: Depreciation Tax Credit (On-Prem only)
         // Formula: Monthly Credit = (Total Hardware Cost / 36) × 21% tax rate
-        const onPremTaxCredit = onPremHardwareCost * CONSTANTS.CORPORATE_TAX_RATE;
+        // Conditioned on includeTaxDepreciation toggle
+        const onPremTaxCredit = includeTaxDepreciation
+            ? onPremHardwareCost * CONSTANTS.CORPORATE_TAX_RATE
+            : 0;
 
         // === V2: Cloud Costs (Scales with utilization) ===
         const cloudGPUs = numGPUs * cloudFraction;

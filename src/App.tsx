@@ -45,7 +45,7 @@ function App() {
 
                     {/* Chart */}
                     <section>
-                        <ResultChart result={result} />
+                        <ResultChart result={result} inputs={inputs} />
                     </section>
 
                     {/* Executive Summary */}

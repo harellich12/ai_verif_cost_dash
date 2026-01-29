@@ -9,14 +9,15 @@ import {
     ResponsiveContainer,
     ReferenceLine,
 } from 'recharts';
-import { CalculationResult } from '../constants';
+import { CalculationResult, CalculatorInputs } from '../constants';
 import { formatCurrency } from '../utils/format';
 
 interface ResultChartProps {
     result: CalculationResult;
+    inputs: CalculatorInputs;
 }
 
-export function ResultChart({ result }: ResultChartProps) {
+export function ResultChart({ result, inputs }: ResultChartProps) {
     const data = result.monthlyData.map((row) => ({
         name: `M${row.month}`,
         month: row.month,
@@ -53,7 +54,13 @@ export function ResultChart({ result }: ResultChartProps) {
                                 boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.3)',
                             }}
                             labelStyle={{ color: '#f1f5f9' }}
-                            formatter={(value: number) => [formatCurrency(value), '']}
+                            formatter={(value: number, name: string) => {
+                                let label = name;
+                                if (name === 'Cumulative GPU Cost' && inputs.deploymentStrategy !== 'cloud' && inputs.includeTaxDepreciation) {
+                                    label = 'Cumulative GPU Cost (Net after Tax)';
+                                }
+                                return [formatCurrency(value), label];
+                            }}
                         />
                         <Legend
                             wrapperStyle={{ paddingTop: '20px' }}
