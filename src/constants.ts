@@ -105,6 +105,34 @@ export const INPUT_CONFIGS: Record<string, InputConfig> = {
         unit: '%',
         tooltip: 'Percentage of workload on purchased hardware (rest goes to cloud)',
     },
+    // V2: Advanced Settings
+    electricityRate: {
+        label: 'Electricity Cost',
+        min: 0.05,
+        max: 0.50,
+        step: 0.01,
+        default: 0.12,
+        unit: '$/kWh',
+        tooltip: 'Cost of electricity for On-Prem GPUs',
+    },
+    adminOverhead: {
+        label: 'IT Admin Overhead',
+        min: 0,
+        max: 50,
+        step: 1,
+        default: 15,
+        unit: '%',
+        tooltip: 'Percentage overhead for IT administration and support',
+    },
+    storageCost: {
+        label: 'Storage/Egress',
+        min: 0,
+        max: 5000,
+        step: 100,
+        default: 500,
+        unit: '$/mo',
+        tooltip: 'Monthly cost for storage and data egress',
+    },
 } as const;
 
 export type InputKey = keyof typeof INPUT_CONFIGS;
@@ -119,6 +147,9 @@ export interface CalculatorInputs {
     deploymentStrategy: DeploymentStrategy;  // V2: cloud, onprem, or hybrid
     onPremPercent: number;         // V2: 0-100, used when hybrid
     includeTaxDepreciation: boolean; // V2: Toggle for tax credit
+    electricityRate: number;       // V2: $/kWh
+    adminOverhead: number;         // V2: %
+    storageCost: number;           // V2: $/mo
 }
 
 export interface MonthlyData {
@@ -164,5 +195,8 @@ export function getDefaultInputs(): CalculatorInputs {
         deploymentStrategy: 'cloud',  // Default to cloud-only
         onPremPercent: INPUT_CONFIGS.onPremPercent.default,
         includeTaxDepreciation: true, // Default to including tax credit
+        electricityRate: INPUT_CONFIGS.electricityRate.default,
+        adminOverhead: INPUT_CONFIGS.adminOverhead.default,
+        storageCost: INPUT_CONFIGS.storageCost.default,
     };
 }

@@ -1,5 +1,6 @@
+import { useState } from 'react';
 import { CalculatorInputs, INPUT_CONFIGS, getDefaultInputs } from '../constants';
-import { RotateCcw, Cpu, Users, Zap, Activity, Bug, Shield, Cloud, Server, Combine } from 'lucide-react';
+import { RotateCcw, Cpu, Users, Zap, Activity, Bug, Shield, Cloud, Server, Combine, ChevronDown, ChevronUp, Settings } from 'lucide-react';
 
 interface ControlsSidebarProps {
     inputs: CalculatorInputs;
@@ -8,6 +9,8 @@ interface ControlsSidebarProps {
 }
 
 export function ControlsSidebar({ inputs, onInputChange, onReset }: ControlsSidebarProps) {
+    const [showAdvanced, setShowAdvanced] = useState(false);
+
     const handleSliderChange = (key: keyof CalculatorInputs, value: string) => {
         onInputChange(key, parseFloat(value) as CalculatorInputs[typeof key]);
     };
@@ -185,6 +188,54 @@ export function ControlsSidebar({ inputs, onInputChange, onReset }: ControlsSide
                         </div>
                     </div>
                 </ControlSection>
+
+                {/* Advanced Settings */}
+                <div className="border border-slate-700/50 rounded-xl overflow-hidden bg-slate-800/20">
+                    <button
+                        onClick={() => setShowAdvanced(!showAdvanced)}
+                        className="w-full px-4 py-3 flex items-center justify-between hover:bg-slate-800/50 transition-colors"
+                    >
+                        <div className="flex items-center gap-2 text-slate-400">
+                            <Settings size={14} />
+                            <span className="text-[11px] font-semibold uppercase tracking-wider">Advanced Settings</span>
+                        </div>
+                        {showAdvanced ? <ChevronUp size={14} className="text-slate-500" /> : <ChevronDown size={14} className="text-slate-500" />}
+                    </button>
+
+                    {showAdvanced && (
+                        <div className="px-4 pb-4 pt-2 space-y-3 bg-slate-900/30 border-t border-slate-700/50 animate-in slide-in-from-top-2 duration-200">
+                            <ControlSlider
+                                icon={<Zap size={14} className="text-yellow-400" />}
+                                label="Electricity Cost"
+                                value={inputs.electricityRate}
+                                config={INPUT_CONFIGS.electricityRate}
+                                onChange={(v) => handleSliderChange('electricityRate', v)}
+                                isDefault={inputs.electricityRate === defaults.electricityRate}
+                                accentColor="yellow"
+                            />
+
+                            <ControlSlider
+                                icon={<Users size={14} className="text-purple-400" />}
+                                label="IT Admin Overhead"
+                                value={inputs.adminOverhead}
+                                config={INPUT_CONFIGS.adminOverhead}
+                                onChange={(v) => handleSliderChange('adminOverhead', v)}
+                                isDefault={inputs.adminOverhead === defaults.adminOverhead}
+                                accentColor="purple"
+                            />
+
+                            <ControlSlider
+                                icon={<Server size={14} className="text-cyan-400" />}
+                                label="Storage / Egress"
+                                value={inputs.storageCost}
+                                config={INPUT_CONFIGS.storageCost}
+                                onChange={(v) => handleSliderChange('storageCost', v)}
+                                isDefault={inputs.storageCost === defaults.storageCost}
+                                accentColor="cyan"
+                            />
+                        </div>
+                    )}
+                </div>
             </div>
 
             {/* Footer */}

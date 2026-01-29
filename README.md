@@ -9,11 +9,15 @@ A sophisticated financial modeling tool designed to help CTOs and Engineering Ma
 - **Interactive Financial Modeling**: Real-time calculation of ROI, Net Present Value (NPV), and Break-Even analysis.
 - **Dynamic Cash Flow Projections**: 12-month visual forecast of expenses vs. savings.
 - **Scenario Planning**:
-    - Compare **Cloud Rental** ($3/hr) vs. **On-Premise Purchase** ($30k/card) for H100 GPUs.
+    - Compare **Cloud Rental** ($3/hr), **On-Premise Purchase** ($30k/card), or **Hybrid** strategies.
     - Adjust AI efficiency gains, GPU utilization, and bug reduction rates.
+- **Advanced Configuration**: Fine-tune **Electricity Costs**, **Admin Overhead**, and **Storage/Egress Fees**.
+- **Tax Implications**: Toggle **CapEx Depreciation Tax Credits** (21%) for On-Prem hardware.
 - **Risk Analysis**: Quantify the financial impact of AI-driven bug reduction (avoiding silicon respins).
 - **Executive Summary**: Auto-generated business recommendations based on model outputs.
-- **Excel Export**: Download a fully interactive `.xlsx` model with **live formulas** for offline presentation and further customization.
+- **Export Capabilities**:
+    - **PDF Brief**: One-click confidential strategy report.
+    - **Excel Model**: Fully interactive `.xlsx` with live formulas.
 
 ## 🛠️ Tech Stack
 
@@ -21,7 +25,7 @@ A sophisticated financial modeling tool designed to help CTOs and Engineering Ma
 - **Styling**: Tailwind CSS (Premium Dark Mode)
 - **Charts**: Recharts
 - **Icons**: Lucide React
-- **Export**: SheetJS (xlsx) for formula-based Excel generation
+- **Export**: SheetJS (xlsx), jspdf (PDF)
 
 ## 📦 Installation & Setup
 
@@ -47,16 +51,20 @@ A sophisticated financial modeling tool designed to help CTOs and Engineering Ma
 - **Team Scale**: Set current number of engineers and desired number of GPUs.
 - **Performance**: Adjust "AI Efficiency Gain" (how much time AI saves per engineer) and "GPU Utilization".
 - **Risk Profile**: Set baseline bug probability and how much AI reduces that risk.
-- **Deployment Mode**: Toggle between "Rental" (OpEx) and "Purchase" (CapEx) models.
+- **Deployment Mode**: Choose **Cloud**, **On-Prem**, or **Hybrid**.
+- **Advanced Settings**: (Collapsed by default)
+    - Customize **Electricity Rate** ($/kWh).
+    - Set **IT Admin Overhead** (%).
+    - Add **Storage & Egress** costs.
 
 ### 2. Analyze Results
 - **KPI Cards**: Review Net Savings, ROI %, Break-Even Month, and Risk Reduction Value.
 - **Charts**: Visualize the "Cumulative Savings" vs. "Cumulative Cost" crossover point.
 - **Executive Summary**: Read the generated strategic recommendation at the bottom.
 
-### 3. Export Report
-- Click the **"Export Model (.xlsx)"** button in the header.
-- This downloads a spreadsheet where **formulas are preserved**, allowing you to tweak assumptions in Excel and see results update instantly.
+### 3. Share & Export
+- **Export PDF**: Click the file icon in the header for a professional "Confidential" brief.
+- **Export Excel**: Download the full editable model for finance reviews.
 
 ## 📄 License
 Private Property - IESE Business School / Project Owner.

@@ -112,7 +112,20 @@ export function ExcelExportBtn({ inputs }: ExcelExportBtnProps) {
         ws['B28'] = { t: 'n', v: 1.5 };  // B28 = PUE
 
         ws['A29'] = { t: 's', v: 'Electricity ($/kWh)' };
-        ws['B29'] = { t: 'n', v: 0.12 };  // B29 = Electricity rate
+        ws['B29'] = { t: 'n', v: inputs.electricityRate };  // B29 = Electricity rate (from input)
+
+        // Advanced Settings Inputs (Side Column)
+        ws['E6'] = { t: 's', v: 'Advan. Inputs' };
+        ws['F6'] = { t: 's', v: 'Value' };
+
+        ws['E7'] = { t: 's', v: 'IT Admin Overhead' };
+        ws['F7'] = { t: 'n', v: inputs.adminOverhead };
+        ws['G7'] = { t: 's', v: '%' };
+
+        ws['E8'] = { t: 's', v: 'Storage Cost' };
+        ws['F8'] = { t: 'n', v: inputs.storageCost };
+        ws['G8'] = { t: 's', v: '$/mo' };
+
 
         // === CALCULATED RESULTS (formulas) ===
         ws['A31'] = { t: 's', v: '=== CALCULATED RESULTS (Formulas) ===' };
@@ -155,11 +168,11 @@ export function ExcelExportBtn({ inputs }: ExcelExportBtnProps) {
         ws['B38'] = { t: 'n', f: 'B7*B34*B17*B24*B9' };
         ws['C38'] = { t: 's', v: 'GPUs × CloudFrac × $/hr × Hours × Util' };
 
-        // V2: Total Monthly GPU Cost
-        // =B35+B36+B38-B37
-        ws['A39'] = { t: 's', v: 'Monthly Total GPU Cost ($)' };
-        ws['B39'] = { t: 'n', f: 'B35+B36+B38-B37' };
-        ws['C39'] = { t: 's', v: 'On-Prem + Power + Cloud - Tax Credit' };
+        // V2: Total Monthly Infra Cost (includes Overheads)
+        // =(B35+B36+B38-B37 + F8) * (1 + F7/100)
+        ws['A39'] = { t: 's', v: 'Monthly Total Infra Cost ($)' };
+        ws['B39'] = { t: 'n', f: '(B35+B36+B38-B37+F8)*(1+F7/100)' };
+        ws['C39'] = { t: 's', v: '(Base + Storage) * (1 + Admin%)' };
 
         // Engineer Monthly Cost
         // =(B20+B21)/12

@@ -5,6 +5,7 @@ import { ExecutiveSummary } from './components/ExecutiveSummary';
 import { ExcelExportBtn } from './components/ExcelExportBtn';
 import { useROICalculator } from './hooks/useROICalculator';
 import { Cpu } from 'lucide-react';
+import { PrintReportBtn } from './components/PrintReportBtn';
 
 function App() {
     const { inputs, updateInput, resetInputs, result } = useROICalculator();
@@ -37,7 +38,13 @@ function App() {
                 </header>
 
                 {/* Dashboard Content */}
-                <div className="p-6 space-y-6 animate-fade-in">
+
+                <div className="p-6 space-y-6 animate-fade-in" id="dashboard-container">
+                    {/* Header Actions */}
+                    <div className="flex justify-end mb-2" data-html2canvas-ignore="true">
+                        <PrintReportBtn />
+                    </div>
+
                     {/* KPI Cards */}
                     <section>
                         <KPICards result={result} />

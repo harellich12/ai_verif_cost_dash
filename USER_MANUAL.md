@@ -19,6 +19,8 @@ The model is built on fixed industry-standard constants:
 1. **Cost of AI**:
    - **Rental**: `GPUs × $3/hr × 730 hrs/month × Utilization %`
    - **Purchase**: `(GPUs × $30k + $10k) / 36 months` (Amortized over 3 years)
+   - **Hybrid**: Mix of On-Prem (baseload) and Cloud (burst) based on your %.
+   - **Tax Credit**: On-Prem costs can be reduced by 21% via the "Include Tax Depreciation" toggle.
 2. **Value of AI**:
    - `Engineer Cost/Month × Total Engineers × 50% Debug Time × AI Efficiency Gain %`
    - *Example*: If 10 engineers cost $1.8M/yr, and AI makes debugging 30% faster, you save the equivalent of hiring ~1.5 more engineers.
@@ -36,7 +38,8 @@ The model is built on fixed industry-standard constants:
 | **GPU Utilization** | 30% - 80% | How efficiently you use the GPUs. 100% is unrealistic; 60% is typical. |
 | **Bug Escape Probability** | 1% - 10% | Likelihood of a critical bug missing verification. |
 | **Bug Reduction with AI** | 20% - 60% | How much the AI improves test coverage, reducing bug risks. |
-| **Deployment Model** | Rental / Purchase | **Rental** is OpEx (pay-as-you-go). **Purchase** is CapEx (upfront investment). |
+| **Deployment Model** | Cloud / On-Prem / Hybrid | **Cloud** (OpEx), **On-Prem** (CapEx), or **Hybrid** (On-Prem baseload + Cloud burst). |
+| **Advanced Settings** | *Collapsed by default* | Fine-tune **Electricity** ($0.12/kWh), **Admin Overhead** (15%), and **Storage** ($500/mo). |
 
 ---
 
@@ -58,7 +61,12 @@ The card at the bottom generates a text paragraph suitable for copying into an e
 
 ---
 
-## 5. Excel Export
+## 5. Export & Sharing
+ 
+### PDF Brief
+Click the **"Export PDF"** button (file icon) in the header to generate a "Confidential - Verification ROI Model" report. This single-page breakdown includes a snapshot of your current scenario and KPIs, ideal for email attachments or slide decks.
+
+### Excel Export
 Clicking **"Export Model (.xlsx)"** generates a sophisticated spreadsheet:
 - **Sheet 1 (Summary)**: Contains the main assumptions and high-level KPIs.
 - **Sheet 2 (Cash Flow)**: A detailed 12-month breakdown.

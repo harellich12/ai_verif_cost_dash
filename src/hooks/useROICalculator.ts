@@ -56,6 +56,9 @@ export function useROICalculator(): UseROICalculatorReturn {
             deploymentStrategy,
             onPremPercent,
             includeTaxDepreciation,
+            electricityRate,
+            adminOverhead,
+            storageCost,
         } = inputs;
 
         // Convert percentages to decimals
@@ -83,9 +86,9 @@ export function useROICalculator(): UseROICalculatorReturn {
             : 0;
 
         // V2: Power & Cooling for On-Prem
-        // Formula: GPU Power (700W) × PUE (1.5) × Hours × $/kWh ($0.12)
+        // Formula: GPU Power (700W) × PUE (1.5) × Hours × $/kWh (input)
         const powerPerGPUMonthly = (CONSTANTS.GPU_POWER_WATTS / 1000) * CONSTANTS.POWER_PUE *
-            CONSTANTS.HOURS_PER_MONTH * CONSTANTS.ELECTRICITY_RATE;
+            CONSTANTS.HOURS_PER_MONTH * electricityRate;
         const onPremPowerCost = onPremGPUs * powerPerGPUMonthly;
 
         // V2: Depreciation Tax Credit (On-Prem only)
@@ -101,7 +104,20 @@ export function useROICalculator(): UseROICalculatorReturn {
             CONSTANTS.HOURS_PER_MONTH * utilizationDecimal;
 
         // === Total Monthly GPU Cost ===
-        const monthlyGPUCost = onPremHardwareCost + onPremPowerCost + cloudCost - onPremTaxCredit;
+        // === Total Monthly GPU Cost (Base) ===
+        const baseMonthlyGPUCost = onPremHardwareCost + onPremPowerCost + cloudCost - onPremTaxCredit;
+
+        // V2: Overhead Costs (Storage + Admin)
+        const monthlyStorageCost = storageCost;
+        // Admin overhead applies to the aggregate of GPU + Storage costs
+        const monthlyAdminCost = (baseMonthlyGPUCost + monthlyStorageCost) * (adminOverhead / 100);
+
+        // Final Total Monthly Cost
+        const monthlyTotalCost = baseMonthlyGPUCost + monthlyStorageCost + monthlyAdminCost;
+
+        // For compatibility, we map this to 'monthlyGPUCost' in the result, 
+        // effectively treating it as "Total Infrastructure Cost"
+        const monthlyGPUCost = monthlyTotalCost;
 
         // === Upfront Cost (for break-even calculation) ===
         const upfrontCost = onPremGPUs > 0
