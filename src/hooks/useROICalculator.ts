@@ -53,7 +53,8 @@ export function useROICalculator(): UseROICalculatorReturn {
             gpuUtilization,
             bugProbability,
             bugReductionWithAI,
-            useRental,
+            deploymentStrategy,
+            onPremPercent,
         } = inputs;
 
         // Convert percentages to decimals
@@ -62,19 +63,46 @@ export function useROICalculator(): UseROICalculatorReturn {
         const bugProbDecimal = bugProbability / 100;
         const bugReductionDecimal = bugReductionWithAI / 100;
 
-        // === Monthly GPU Cost ===
-        let monthlyGPUCost: number;
-        let upfrontCost = 0;
-
-        if (useRental) {
-            // Rental: hourly rate * utilization * hours per month
-            monthlyGPUCost = numGPUs * CONSTANTS.H100_GPU_RENTAL_HOURLY *
-                CONSTANTS.HOURS_PER_MONTH * utilizationDecimal;
+        // === V2: Determine On-Prem vs Cloud Split ===
+        let onPremFraction: number;
+        if (deploymentStrategy === 'cloud') {
+            onPremFraction = 0;
+        } else if (deploymentStrategy === 'onprem') {
+            onPremFraction = 1;
         } else {
-            // Purchase: Depreciate over 3 years (36 months)
-            upfrontCost = (numGPUs * CONSTANTS.H100_GPU_PURCHASE) + CONSTANTS.H100_CHASSIS_OVERHEAD;
-            monthlyGPUCost = upfrontCost / 36;
+            // Hybrid mode
+            onPremFraction = onPremPercent / 100;
         }
+        const cloudFraction = 1 - onPremFraction;
+
+        // === V2: On-Prem Costs (Fixed, doesn't scale with utilization) ===
+        const onPremGPUs = numGPUs * onPremFraction;
+        const onPremHardwareCost = onPremGPUs > 0
+            ? ((onPremGPUs * CONSTANTS.H100_GPU_PURCHASE) + CONSTANTS.H100_CHASSIS_OVERHEAD) / CONSTANTS.DEPRECIATION_MONTHS
+            : 0;
+
+        // V2: Power & Cooling for On-Prem
+        // Formula: GPU Power (700W) × PUE (1.5) × Hours × $/kWh ($0.12)
+        const powerPerGPUMonthly = (CONSTANTS.GPU_POWER_WATTS / 1000) * CONSTANTS.POWER_PUE *
+            CONSTANTS.HOURS_PER_MONTH * CONSTANTS.ELECTRICITY_RATE;
+        const onPremPowerCost = onPremGPUs * powerPerGPUMonthly;
+
+        // V2: Depreciation Tax Credit (On-Prem only)
+        // Formula: Monthly Credit = (Total Hardware Cost / 36) × 21% tax rate
+        const onPremTaxCredit = onPremHardwareCost * CONSTANTS.CORPORATE_TAX_RATE;
+
+        // === V2: Cloud Costs (Scales with utilization) ===
+        const cloudGPUs = numGPUs * cloudFraction;
+        const cloudCost = cloudGPUs * CONSTANTS.H100_GPU_RENTAL_HOURLY *
+            CONSTANTS.HOURS_PER_MONTH * utilizationDecimal;
+
+        // === Total Monthly GPU Cost ===
+        const monthlyGPUCost = onPremHardwareCost + onPremPowerCost + cloudCost - onPremTaxCredit;
+
+        // === Upfront Cost (for break-even calculation) ===
+        const upfrontCost = onPremGPUs > 0
+            ? (onPremGPUs * CONSTANTS.H100_GPU_PURCHASE) + CONSTANTS.H100_CHASSIS_OVERHEAD
+            : 0;
 
         // === Engineering Value per Engineer per Month ===
         const engineerMonthlyCost = (CONSTANTS.ENGINEER_SALARY_YEARLY + CONSTANTS.EDA_LICENSE_YEARLY)
@@ -96,7 +124,7 @@ export function useROICalculator(): UseROICalculatorReturn {
         // === 12-Month Cash Flow Breakdown ===
         const monthlyData: MonthlyData[] = [];
         let cumulativeSavings = 0;
-        let cumulativeGPUCost = useRental ? 0 : upfrontCost;
+        let cumulativeGPUCost = upfrontCost;
 
         for (let month = 1; month <= 12; month++) {
             const netSavings = monthlyEngineerValueSaved - monthlyGPUCost;
@@ -116,7 +144,7 @@ export function useROICalculator(): UseROICalculatorReturn {
 
         // === Break-Even Point ===
         let breakEvenMonth: number | null = null;
-        const initialInvestment = useRental ? 0 : upfrontCost;
+        const initialInvestment = upfrontCost;
         let runningTotal = -initialInvestment;
 
         for (let i = 0; i < monthlyData.length; i++) {
@@ -128,7 +156,7 @@ export function useROICalculator(): UseROICalculatorReturn {
         }
 
         // === Total Annual Values ===
-        const totalGPUCost = (monthlyGPUCost * 12) + (useRental ? 0 : upfrontCost);
+        const totalGPUCost = (monthlyGPUCost * 12) + upfrontCost;
         const totalEngineerSavings = monthlyEngineerValueSaved * 12;
         const netSavingsYear = totalEngineerSavings - totalGPUCost;
         const roiPercent = totalGPUCost > 0 ? ((totalEngineerSavings - totalGPUCost) / totalGPUCost) * 100 : 0;

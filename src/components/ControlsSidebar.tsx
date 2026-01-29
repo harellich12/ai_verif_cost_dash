@@ -1,5 +1,5 @@
 import { CalculatorInputs, INPUT_CONFIGS, getDefaultInputs } from '../constants';
-import { RotateCcw, Cpu, Users, Zap, Activity, Bug, Shield, Cloud, Server } from 'lucide-react';
+import { RotateCcw, Cpu, Users, Zap, Activity, Bug, Shield, Cloud, Server, Combine } from 'lucide-react';
 
 interface ControlsSidebarProps {
     inputs: CalculatorInputs;
@@ -9,12 +9,7 @@ interface ControlsSidebarProps {
 
 export function ControlsSidebar({ inputs, onInputChange, onReset }: ControlsSidebarProps) {
     const handleSliderChange = (key: keyof CalculatorInputs, value: string) => {
-        const numValue = parseFloat(value);
-        if (key === 'useRental') {
-            onInputChange(key, numValue === 1);
-        } else {
-            onInputChange(key, numValue);
-        }
+        onInputChange(key, parseFloat(value) as CalculatorInputs[typeof key]);
     };
 
     const defaults = getDefaultInputs();
@@ -113,27 +108,60 @@ export function ControlsSidebar({ inputs, onInputChange, onReset }: ControlsSide
                     />
                 </ControlSection>
 
-                {/* Deployment Section */}
-                <ControlSection title="Deployment" icon={<Cloud size={14} />}>
+                {/* Deployment Strategy Section - V2 */}
+                <ControlSection title="Deployment Strategy" icon={<Cloud size={14} />}>
                     <div className="bg-slate-800/50 rounded-lg p-3">
                         <div className="flex items-center justify-between mb-3">
-                            <span className="text-xs text-slate-400 uppercase tracking-wide">GPU Model</span>
+                            <span className="text-xs text-slate-400 uppercase tracking-wide">Infrastructure Mode</span>
                         </div>
-                        <div className="grid grid-cols-2 gap-2">
-                            <DeploymentButton
-                                icon={<Cloud size={16} />}
-                                label="Cloud Rental"
-                                sublabel="$3/hr per GPU"
-                                isActive={inputs.useRental}
-                                onClick={() => onInputChange('useRental', true)}
+                        {/* 3-way Toggle */}
+                        <div className="grid grid-cols-3 gap-1 mb-3">
+                            <StrategyButton
+                                icon={<Cloud size={14} />}
+                                label="Cloud"
+                                isActive={inputs.deploymentStrategy === 'cloud'}
+                                onClick={() => onInputChange('deploymentStrategy', 'cloud')}
                             />
-                            <DeploymentButton
-                                icon={<Server size={16} />}
-                                label="Purchase"
-                                sublabel="$30K per GPU"
-                                isActive={!inputs.useRental}
-                                onClick={() => onInputChange('useRental', false)}
+                            <StrategyButton
+                                icon={<Combine size={14} />}
+                                label="Hybrid"
+                                isActive={inputs.deploymentStrategy === 'hybrid'}
+                                onClick={() => onInputChange('deploymentStrategy', 'hybrid')}
                             />
+                            <StrategyButton
+                                icon={<Server size={14} />}
+                                label="On-Prem"
+                                isActive={inputs.deploymentStrategy === 'onprem'}
+                                onClick={() => onInputChange('deploymentStrategy', 'onprem')}
+                            />
+                        </div>
+
+                        {/* Conditional Hybrid Slider */}
+                        {inputs.deploymentStrategy === 'hybrid' && (
+                            <div className="mt-3 pt-3 border-t border-slate-700/50">
+                                <ControlSlider
+                                    icon={<Server size={14} className="text-orange-400" />}
+                                    label="On-Prem Workload"
+                                    value={inputs.onPremPercent}
+                                    config={INPUT_CONFIGS.onPremPercent}
+                                    onChange={(v) => handleSliderChange('onPremPercent', v)}
+                                    isDefault={inputs.onPremPercent === defaults.onPremPercent}
+                                    accentColor="orange"
+                                />
+                            </div>
+                        )}
+
+                        {/* Cost Summary */}
+                        <div className="mt-3 pt-3 border-t border-slate-700/50 text-[10px] text-slate-500">
+                            {inputs.deploymentStrategy === 'cloud' && (
+                                <span>💨 Cloud: $3/hr × utilization (scales with usage)</span>
+                            )}
+                            {inputs.deploymentStrategy === 'onprem' && (
+                                <span>🏢 On-Prem: $30K/GPU + power (fixed cost)</span>
+                            )}
+                            {inputs.deploymentStrategy === 'hybrid' && (
+                                <span>⚡ Hybrid: {inputs.onPremPercent}% On-Prem, {100 - inputs.onPremPercent}% Cloud Burst</span>
+                            )}
                         </div>
                     </div>
                 </ControlSection>
@@ -142,7 +170,7 @@ export function ControlsSidebar({ inputs, onInputChange, onReset }: ControlsSide
             {/* Footer */}
             <div className="p-4 border-t border-slate-700/50 bg-slate-900/80">
                 <div className="text-center">
-                    <p className="text-[10px] text-slate-500 uppercase tracking-wider">Financial Model v1.0</p>
+                    <p className="text-[10px] text-slate-500 uppercase tracking-wider">Financial Model v2.0</p>
                 </div>
             </div>
         </aside>
@@ -179,7 +207,7 @@ interface ControlSliderProps {
     config: { min: number; max: number; step: number; unit: string };
     onChange: (value: string) => void;
     isDefault: boolean;
-    accentColor: 'cyan' | 'green' | 'yellow' | 'purple' | 'red' | 'emerald' | 'blue';
+    accentColor: 'cyan' | 'green' | 'yellow' | 'purple' | 'red' | 'emerald' | 'blue' | 'orange';
 }
 
 const colorMap = {
@@ -190,6 +218,7 @@ const colorMap = {
     red: { bg: 'bg-red-500', text: 'text-red-400', ring: 'ring-red-500/30' },
     emerald: { bg: 'bg-emerald-500', text: 'text-emerald-400', ring: 'ring-emerald-500/30' },
     blue: { bg: 'bg-blue-500', text: 'text-blue-400', ring: 'ring-blue-500/30' },
+    orange: { bg: 'bg-orange-500', text: 'text-orange-400', ring: 'ring-orange-500/30' },
 };
 
 function ControlSlider({ icon, label, value, config, onChange, isDefault, accentColor }: ControlSliderProps) {
@@ -231,28 +260,26 @@ function ControlSlider({ icon, label, value, config, onChange, isDefault, accent
     );
 }
 
-interface DeploymentButtonProps {
+interface StrategyButtonProps {
     icon: React.ReactNode;
     label: string;
-    sublabel: string;
     isActive: boolean;
     onClick: () => void;
 }
 
-function DeploymentButton({ icon, label, sublabel, isActive, onClick }: DeploymentButtonProps) {
+function StrategyButton({ icon, label, isActive, onClick }: StrategyButtonProps) {
     return (
         <button
             onClick={onClick}
-            className={`p-3 rounded-lg text-left transition-all duration-200 ${isActive
-                    ? 'bg-blue-500/20 ring-1 ring-blue-500/50 text-blue-300'
-                    : 'bg-slate-700/30 hover:bg-slate-700/50 text-slate-400 hover:text-slate-300'
+            className={`p-2 rounded-lg text-center transition-all duration-200 ${isActive
+                ? 'bg-blue-500/20 ring-1 ring-blue-500/50 text-blue-300'
+                : 'bg-slate-700/30 hover:bg-slate-700/50 text-slate-400 hover:text-slate-300'
                 }`}
         >
-            <div className="flex items-center gap-2 mb-1">
+            <div className="flex flex-col items-center gap-1">
                 {icon}
-                <span className="text-xs font-medium">{label}</span>
+                <span className="text-[10px] font-medium">{label}</span>
             </div>
-            <span className="text-[10px] opacity-60">{sublabel}</span>
         </button>
     );
 }

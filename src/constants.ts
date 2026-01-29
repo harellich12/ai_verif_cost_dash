@@ -18,7 +18,17 @@ export const CONSTANTS = {
     // Derived Constants
     HOURS_PER_MONTH: 730,                   // Average hours per month (365 * 24 / 12)
     MONTHS_PER_YEAR: 12,
+
+    // V2: Advanced Constants
+    DEPRECIATION_MONTHS: 36,                // 3-year useful life for CapEx
+    CORPORATE_TAX_RATE: 0.21,               // 21% tax rate for depreciation credit
+    GPU_POWER_WATTS: 700,                   // H100 TDP in watts
+    POWER_PUE: 1.5,                         // Power Usage Effectiveness (data center overhead)
+    ELECTRICITY_RATE: 0.12,                 // $/kWh
 } as const;
+
+// Deployment strategy options
+export type DeploymentStrategy = 'cloud' | 'onprem' | 'hybrid';
 
 // Input configuration with defaults and bounds
 export interface InputConfig {
@@ -86,14 +96,14 @@ export const INPUT_CONFIGS: Record<string, InputConfig> = {
         unit: '%',
         tooltip: 'Reduction in bug escape probability with AI',
     },
-    useRental: {
-        label: 'GPU Rental (vs Purchase)',
+    onPremPercent: {
+        label: 'On-Prem Workload %',
         min: 0,
-        max: 1,
-        step: 1,
-        default: 1,
-        unit: 'boolean',
-        tooltip: 'Use cloud rental instead of purchasing hardware',
+        max: 100,
+        step: 10,
+        default: 0,
+        unit: '%',
+        tooltip: 'Percentage of workload on purchased hardware (rest goes to cloud)',
     },
 } as const;
 
@@ -106,7 +116,8 @@ export interface CalculatorInputs {
     gpuUtilization: number;        // percentage
     bugProbability: number;        // percentage
     bugReductionWithAI: number;    // percentage
-    useRental: boolean;
+    deploymentStrategy: DeploymentStrategy;  // V2: cloud, onprem, or hybrid
+    onPremPercent: number;         // V2: 0-100, used when hybrid
 }
 
 export interface MonthlyData {
@@ -149,6 +160,7 @@ export function getDefaultInputs(): CalculatorInputs {
         gpuUtilization: INPUT_CONFIGS.gpuUtilization.default,
         bugProbability: INPUT_CONFIGS.bugProbability.default,
         bugReductionWithAI: INPUT_CONFIGS.bugReductionWithAI.default,
-        useRental: INPUT_CONFIGS.useRental.default === 1,
+        deploymentStrategy: 'cloud',  // Default to cloud-only
+        onPremPercent: INPUT_CONFIGS.onPremPercent.default,
     };
 }

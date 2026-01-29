@@ -54,119 +54,176 @@ export function ExcelExportBtn({ inputs }: ExcelExportBtnProps) {
         ws['B11'] = { t: 'n', v: inputs.bugReductionWithAI / 100 };  // B11 = Bug Reduction (decimal)
         ws['C11'] = { t: 's', v: '% (as decimal)' };
 
-        ws['A12'] = { t: 's', v: 'Use Rental (1) or Purchase (0)' };
-        ws['B12'] = { t: 'n', v: inputs.useRental ? 1 : 0 };  // B12 = Rental flag
-        ws['C12'] = { t: 's', v: '1=Rental, 0=Purchase' };
+        // V2: Deployment Strategy (0=Cloud, 1=On-Prem, 2=Hybrid)
+        const strategyToNum = { 'cloud': 0, 'onprem': 1, 'hybrid': 2 };
+        ws['A12'] = { t: 's', v: 'Deployment Strategy' };
+        ws['B12'] = { t: 'n', v: strategyToNum[inputs.deploymentStrategy] };  // B12 = Strategy
+        ws['C12'] = { t: 's', v: '0=Cloud, 1=On-Prem, 2=Hybrid' };
+
+        ws['A13'] = { t: 's', v: 'On-Prem Workload %' };
+        ws['B13'] = { t: 'n', v: inputs.onPremPercent / 100 };  // B13 = On-Prem fraction
+        ws['C13'] = { t: 's', v: '% (as decimal, used in Hybrid mode)' };
 
         // === CONSTANTS (fixed values) ===
-        ws['A14'] = { t: 's', v: '=== CONSTANTS ===' };
-        ws['A15'] = { t: 's', v: 'Constant' };
-        ws['B15'] = { t: 's', v: 'Value' };
+        ws['A15'] = { t: 's', v: '=== CONSTANTS ===' };
+        ws['A16'] = { t: 's', v: 'Constant' };
+        ws['B16'] = { t: 's', v: 'Value' };
 
-        ws['A16'] = { t: 's', v: 'H100 GPU Rental ($/hour)' };
-        ws['B16'] = { t: 'n', v: 3.00 };  // B16 = GPU hourly rate
+        ws['A17'] = { t: 's', v: 'H100 GPU Rental ($/hour)' };
+        ws['B17'] = { t: 'n', v: 3.00 };  // B17 = GPU hourly rate
 
-        ws['A17'] = { t: 's', v: 'H100 GPU Purchase ($)' };
-        ws['B17'] = { t: 'n', v: 30000 };  // B17 = GPU purchase price
+        ws['A18'] = { t: 's', v: 'H100 GPU Purchase ($)' };
+        ws['B18'] = { t: 'n', v: 30000 };  // B18 = GPU purchase price
 
-        ws['A18'] = { t: 's', v: 'Chassis Overhead ($)' };
-        ws['B18'] = { t: 'n', v: 10000 };  // B18 = Chassis cost
+        ws['A19'] = { t: 's', v: 'Chassis Overhead ($)' };
+        ws['B19'] = { t: 'n', v: 10000 };  // B19 = Chassis cost
 
-        ws['A19'] = { t: 's', v: 'Engineer Salary ($/year)' };
-        ws['B19'] = { t: 'n', v: 200000 };  // B19 = Engineer salary
+        ws['A20'] = { t: 's', v: 'Engineer Salary ($/year)' };
+        ws['B20'] = { t: 'n', v: 200000 };  // B20 = Engineer salary
 
-        ws['A20'] = { t: 's', v: 'EDA License ($/year)' };
-        ws['B20'] = { t: 'n', v: 25000 };  // B20 = EDA license
+        ws['A21'] = { t: 's', v: 'EDA License ($/year)' };
+        ws['B21'] = { t: 'n', v: 25000 };  // B21 = EDA license
 
-        ws['A21'] = { t: 's', v: 'Respin Cost ($)' };
-        ws['B21'] = { t: 'n', v: 5000000 };  // B21 = Respin cost
+        ws['A22'] = { t: 's', v: 'Respin Cost ($)' };
+        ws['B22'] = { t: 'n', v: 5000000 };  // B22 = Respin cost
 
-        ws['A22'] = { t: 's', v: 'Debug Time Ratio' };
-        ws['B22'] = { t: 'n', v: 0.50 };  // B22 = Debug ratio
+        ws['A23'] = { t: 's', v: 'Debug Time Ratio' };
+        ws['B23'] = { t: 'n', v: 0.50 };  // B23 = Debug ratio
 
-        ws['A23'] = { t: 's', v: 'Hours per Month' };
-        ws['B23'] = { t: 'n', v: 730 };  // B23 = Hours/month
+        ws['A24'] = { t: 's', v: 'Hours per Month' };
+        ws['B24'] = { t: 'n', v: 730 };  // B24 = Hours/month
+
+        // V2: New Constants
+        ws['A25'] = { t: 's', v: 'Depreciation Months' };
+        ws['B25'] = { t: 'n', v: 36 };  // B25 = 3-year depreciation
+
+        ws['A26'] = { t: 's', v: 'Corporate Tax Rate' };
+        ws['B26'] = { t: 'n', v: 0.21 };  // B26 = 21% tax rate
+
+        ws['A27'] = { t: 's', v: 'GPU Power (kW)' };
+        ws['B27'] = { t: 'n', v: 0.7 };  // B27 = 700W = 0.7kW
+
+        ws['A28'] = { t: 's', v: 'Power PUE' };
+        ws['B28'] = { t: 'n', v: 1.5 };  // B28 = PUE
+
+        ws['A29'] = { t: 's', v: 'Electricity ($/kWh)' };
+        ws['B29'] = { t: 'n', v: 0.12 };  // B29 = Electricity rate
 
         // === CALCULATED RESULTS (formulas) ===
-        ws['A25'] = { t: 's', v: '=== CALCULATED RESULTS (Formulas) ===' };
-        ws['A26'] = { t: 's', v: 'Metric' };
-        ws['B26'] = { t: 's', v: 'Value' };
-        ws['C26'] = { t: 's', v: 'Formula Description' };
+        ws['A31'] = { t: 's', v: '=== CALCULATED RESULTS (Formulas) ===' };
+        ws['A32'] = { t: 's', v: 'Metric' };
+        ws['B32'] = { t: 's', v: 'Value' };
+        ws['C32'] = { t: 's', v: 'Formula Description' };
 
-        // Monthly GPU Cost (Rental)
-        // =IF(B12=1, B7*B16*B23*B9, (B7*B17+B18)/36)
-        ws['A27'] = { t: 's', v: 'Monthly GPU Cost ($)' };
-        ws['B27'] = { t: 'n', f: 'IF(B12=1,B7*B16*B23*B9,(B7*B17+B18)/36)' };
-        ws['C27'] = { t: 's', v: 'If Rental: GPUs × Rate × Hours × Util. Else: (GPUs × Price + Chassis) / 36' };
+        // V2: On-Prem Fraction based on deployment strategy
+        // =IF(B12=0, 0, IF(B12=1, 1, B13))
+        ws['A33'] = { t: 's', v: 'On-Prem Fraction' };
+        ws['B33'] = { t: 'n', f: 'IF(B12=0,0,IF(B12=1,1,B13))' };
+        ws['C33'] = { t: 's', v: 'Cloud=0, On-Prem=1, Hybrid=B13' };
+
+        // V2: Cloud Fraction = 1 - On-Prem Fraction
+        ws['A34'] = { t: 's', v: 'Cloud Fraction' };
+        ws['B34'] = { t: 'n', f: '1-B33' };
+        ws['C34'] = { t: 's', v: '1 - On-Prem Fraction' };
+
+        // V2: On-Prem Hardware Cost (monthly, amortized)
+        // =IF(B33>0, ((B7*B33*B18)+B19)/B25, 0)
+        ws['A35'] = { t: 's', v: 'Monthly On-Prem Hardware ($)' };
+        ws['B35'] = { t: 'n', f: 'IF(B33>0,((B7*B33*B18)+B19)/B25,0)' };
+        ws['C35'] = { t: 's', v: '(GPUs × OnPremFrac × Price + Chassis) / 36' };
+
+        // V2: On-Prem Power Cost (monthly)
+        // =B7*B33*B27*B28*B24*B29
+        ws['A36'] = { t: 's', v: 'Monthly On-Prem Power ($)' };
+        ws['B36'] = { t: 'n', f: 'B7*B33*B27*B28*B24*B29' };
+        ws['C36'] = { t: 's', v: 'GPUs × Fraction × kW × PUE × Hours × $/kWh' };
+
+        // V2: Tax Credit (monthly)
+        // =B35*B26
+        ws['A37'] = { t: 's', v: 'Monthly Tax Credit ($)' };
+        ws['B37'] = { t: 'n', f: 'B35*B26' };
+        ws['C37'] = { t: 's', v: 'On-Prem Hardware Cost × Tax Rate' };
+
+        // V2: Cloud Cost (monthly, scales with utilization)
+        // =B7*B34*B17*B24*B9
+        ws['A38'] = { t: 's', v: 'Monthly Cloud Cost ($)' };
+        ws['B38'] = { t: 'n', f: 'B7*B34*B17*B24*B9' };
+        ws['C38'] = { t: 's', v: 'GPUs × CloudFrac × $/hr × Hours × Util' };
+
+        // V2: Total Monthly GPU Cost
+        // =B35+B36+B38-B37
+        ws['A39'] = { t: 's', v: 'Monthly Total GPU Cost ($)' };
+        ws['B39'] = { t: 'n', f: 'B35+B36+B38-B37' };
+        ws['C39'] = { t: 's', v: 'On-Prem + Power + Cloud - Tax Credit' };
 
         // Engineer Monthly Cost
-        // =(B19+B20)/12
-        ws['A28'] = { t: 's', v: 'Engineer Monthly Cost ($)' };
-        ws['B28'] = { t: 'n', f: '(B19+B20)/12' };
-        ws['C28'] = { t: 's', v: '(Salary + EDA License) / 12 months' };
+        // =(B20+B21)/12
+        ws['A40'] = { t: 's', v: 'Engineer Monthly Cost ($)' };
+        ws['B40'] = { t: 'n', f: '(B20+B21)/12' };
+        ws['C40'] = { t: 's', v: '(Salary + EDA License) / 12 months' };
 
         // Monthly Engineer Value Saved
-        // =B6*B28*B22*B8
-        ws['A29'] = { t: 's', v: 'Monthly Eng. Value Saved ($)' };
-        ws['B29'] = { t: 'n', f: 'B6*B28*B22*B8' };
-        ws['C29'] = { t: 's', v: 'Engineers × Monthly Cost × Debug Ratio × Efficiency' };
+        // =B6*B40*B23*B8
+        ws['A41'] = { t: 's', v: 'Monthly Eng. Value Saved ($)' };
+        ws['B41'] = { t: 'n', f: 'B6*B40*B23*B8' };
+        ws['C41'] = { t: 's', v: 'Engineers × Monthly Cost × Debug Ratio × Efficiency' };
 
         // Monthly OpEx Delta
-        // =B27-B29
-        ws['A30'] = { t: 's', v: 'Monthly OpEx Delta ($)' };
-        ws['B30'] = { t: 'n', f: 'B27-B29' };
-        ws['C30'] = { t: 's', v: 'GPU Cost - Value Saved (negative = savings)' };
+        // =B39-B41
+        ws['A42'] = { t: 's', v: 'Monthly OpEx Delta ($)' };
+        ws['B42'] = { t: 'n', f: 'B39-B41' };
+        ws['C42'] = { t: 's', v: 'GPU Cost - Value Saved (negative = savings)' };
 
-        // Upfront Cost (for purchase)
-        // =IF(B12=0, B7*B17+B18, 0)
-        ws['A31'] = { t: 's', v: 'Upfront Investment ($)' };
-        ws['B31'] = { t: 'n', f: 'IF(B12=0,B7*B17+B18,0)' };
-        ws['C31'] = { t: 's', v: 'Purchase only: GPUs × Price + Chassis' };
+        // Upfront Investment
+        // =IF(B33>0, B7*B33*B18+B19, 0)
+        ws['A43'] = { t: 's', v: 'Upfront Investment ($)' };
+        ws['B43'] = { t: 'n', f: 'IF(B33>0,B7*B33*B18+B19,0)' };
+        ws['C43'] = { t: 's', v: 'On-Prem only: GPUs × Fraction × Price + Chassis' };
 
         // Total Annual GPU Cost
-        // =B27*12+B31
-        ws['A32'] = { t: 's', v: 'Total Annual GPU Cost ($)' };
-        ws['B32'] = { t: 'n', f: 'B27*12+B31' };
-        ws['C32'] = { t: 's', v: 'Monthly GPU × 12 + Upfront' };
+        // =B39*12+B43
+        ws['A44'] = { t: 's', v: 'Total Annual GPU Cost ($)' };
+        ws['B44'] = { t: 'n', f: 'B39*12+B43' };
+        ws['C44'] = { t: 's', v: 'Monthly GPU × 12 + Upfront' };
 
         // Total Annual Savings
-        // =B29*12
-        ws['A33'] = { t: 's', v: 'Total Annual Eng. Savings ($)' };
-        ws['B33'] = { t: 'n', f: 'B29*12' };
-        ws['C33'] = { t: 's', v: 'Monthly Value Saved × 12' };
+        // =B41*12
+        ws['A45'] = { t: 's', v: 'Total Annual Eng. Savings ($)' };
+        ws['B45'] = { t: 'n', f: 'B41*12' };
+        ws['C45'] = { t: 's', v: 'Monthly Value Saved × 12' };
 
         // Net Annual Savings
-        // =B33-B32
-        ws['A34'] = { t: 's', v: 'Net Annual Savings ($)' };
-        ws['B34'] = { t: 'n', f: 'B33-B32' };
-        ws['C34'] = { t: 's', v: 'Eng. Savings - GPU Cost (positive = profit)' };
+        // =B45-B44
+        ws['A46'] = { t: 's', v: 'Net Annual Savings ($)' };
+        ws['B46'] = { t: 'n', f: 'B45-B44' };
+        ws['C46'] = { t: 's', v: 'Eng. Savings - GPU Cost (positive = profit)' };
 
         // ROI %
-        // =IF(B32>0, (B33-B32)/B32*100, 0)
-        ws['A35'] = { t: 's', v: 'ROI (%)' };
-        ws['B35'] = { t: 'n', f: 'IF(B32>0,(B33-B32)/B32*100,0)' };
-        ws['C35'] = { t: 's', v: '(Savings - Cost) / Cost × 100' };
+        // =IF(B44>0, (B45-B44)/B44*100, 0)
+        ws['A47'] = { t: 's', v: 'ROI (%)' };
+        ws['B47'] = { t: 'n', f: 'IF(B44>0,(B45-B44)/B44*100,0)' };
+        ws['C47'] = { t: 's', v: '(Savings - Cost) / Cost × 100' };
 
         // === RISK ANALYSIS ===
-        ws['A37'] = { t: 's', v: '=== RISK ANALYSIS ===' };
+        ws['A49'] = { t: 's', v: '=== RISK ANALYSIS ===' };
 
         // Baseline Risk Value
-        // =B10*B21
-        ws['A38'] = { t: 's', v: 'Baseline Risk Value ($)' };
-        ws['B38'] = { t: 'n', f: 'B10*B21' };
-        ws['C38'] = { t: 's', v: 'Bug Probability × Respin Cost' };
+        // =B10*B22
+        ws['A50'] = { t: 's', v: 'Baseline Risk Value ($)' };
+        ws['B50'] = { t: 'n', f: 'B10*B22' };
+        ws['C50'] = { t: 's', v: 'Bug Probability × Respin Cost' };
 
         // Risk with AI
-        // =B10*(1-B11)*B21
-        ws['A39'] = { t: 's', v: 'Risk Value with AI ($)' };
-        ws['B39'] = { t: 'n', f: 'B10*(1-B11)*B21' };
-        ws['C39'] = { t: 's', v: 'Reduced Bug Prob × Respin Cost' };
+        // =B10*(1-B11)*B22
+        ws['A51'] = { t: 's', v: 'Risk Value with AI ($)' };
+        ws['B51'] = { t: 'n', f: 'B10*(1-B11)*B22' };
+        ws['C51'] = { t: 's', v: 'Reduced Bug Prob × Respin Cost' };
 
         // Risk Reduction
-        // =B38-B39
-        ws['A40'] = { t: 's', v: 'Risk Reduction ($)' };
-        ws['B40'] = { t: 'n', f: 'B38-B39' };
-        ws['C40'] = { t: 's', v: 'Baseline - With AI = Avoided Risk' };
+        // =B50-B51
+        ws['A52'] = { t: 's', v: 'Risk Reduction ($)' };
+        ws['B52'] = { t: 'n', f: 'B50-B51' };
+        ws['C52'] = { t: 's', v: 'Baseline - With AI = Avoided Risk' };
 
         // Set column widths
         ws['!cols'] = [
@@ -176,7 +233,7 @@ export function ExcelExportBtn({ inputs }: ExcelExportBtnProps) {
         ];
 
         // Set range
-        ws['!ref'] = 'A1:C40';
+        ws['!ref'] = 'A1:C52';
 
         XLSX.utils.book_append_sheet(wb, ws, 'Summary');
 
@@ -191,29 +248,29 @@ export function ExcelExportBtn({ inputs }: ExcelExportBtnProps) {
         wsCF['E1'] = { t: 's', v: 'Net Savings ($)' };
         wsCF['F1'] = { t: 's', v: 'Cumulative Savings ($)' };
 
-        // Data rows with formulas referencing Summary sheet
+        // Data rows with formulas referencing Summary sheet (V2 cell references)
         for (let i = 0; i < 12; i++) {
             const row = i + 2;
 
             // Month number
             wsCF[`A${row}`] = { t: 'n', v: i + 1 };
 
-            // GPU Cost = Summary!B27
-            wsCF[`B${row}`] = { t: 'n', f: 'Summary!$B$27' };
+            // GPU Cost = Summary!B39 (Total Monthly GPU Cost)
+            wsCF[`B${row}`] = { t: 'n', f: 'Summary!$B$39' };
 
-            // Engineer Cost Baseline = Engineers × Monthly Cost
-            wsCF[`C${row}`] = { t: 'n', f: 'Summary!$B$6*Summary!$B$28' };
+            // Engineer Cost Baseline = Engineers × Monthly Cost (B6 × B40)
+            wsCF[`C${row}`] = { t: 'n', f: 'Summary!$B$6*Summary!$B$40' };
 
             // Engineer Cost with AI = Baseline - Value Saved
-            wsCF[`D${row}`] = { t: 'n', f: 'C' + row + '-Summary!$B$29' };
+            wsCF[`D${row}`] = { t: 'n', f: 'C' + row + '-Summary!$B$41' };
 
             // Net Savings = Value Saved - GPU Cost
-            wsCF[`E${row}`] = { t: 'n', f: 'Summary!$B$29-Summary!$B$27' };
+            wsCF[`E${row}`] = { t: 'n', f: 'Summary!$B$41-Summary!$B$39' };
 
             // Cumulative Savings
             if (i === 0) {
                 // First month: just net savings minus upfront
-                wsCF[`F${row}`] = { t: 'n', f: 'E' + row + '-Summary!$B$31' };
+                wsCF[`F${row}`] = { t: 'n', f: 'E' + row + '-Summary!$B$43' };
             } else {
                 // Subsequent months: previous cumulative + net savings
                 wsCF[`F${row}`] = { t: 'n', f: 'F' + (row - 1) + '+E' + row };

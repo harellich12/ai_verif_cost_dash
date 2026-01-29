@@ -41,3 +41,12 @@ The exported file must contain two sheets:
 * **Sheet 1 (Summary):** A static table of the Inputs and the final KPI results (Net Savings, ROI %).
 * **Sheet 2 (Cash Flow):** A 12-month row-by-row breakdown:
     * Columns: Month, GPU Cost, Engineer Cost (Baseline), Engineer Cost (with AI), Net Savings, Cumulative Savings.
+
+## 7. Advanced Logic Requirements (V2 Features)
+* **Hybrid Mode:** User can split workload (e.g., 80% On-Prem, 20% Cloud Burst).
+* **CapEx Depreciation:** For On-Prem hardware, assume a 3-year useful life.
+    * *Formula:* Monthly Credit = (Total Hardware Cost / 36) * 0.21 (Corporate Tax Rate).
+* **Power & Cooling:**
+    * *Formula:* GPU Power (700W) * PUE (1.5) * Hours * $/kWh ($0.12).
+* **Utilization Rate:** Cloud costs scale linearly with usage. On-Prem costs are fixed regardless of usage.
+    * *Logic:* If 'Cloud' is selected, multiply cost by `Utilization %`. If 'On-Prem', cost is flat 100%.
