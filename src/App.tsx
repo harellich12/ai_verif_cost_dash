@@ -4,11 +4,14 @@ import { ResultChart } from './components/ResultChart';
 import { ExecutiveSummary } from './components/ExecutiveSummary';
 import { ExcelExportBtn } from './components/ExcelExportBtn';
 import { useROICalculator } from './hooks/useROICalculator';
-import { Cpu } from 'lucide-react';
+import { Cpu, BookOpen } from 'lucide-react';
 import { PrintReportBtn } from './components/PrintReportBtn';
+import { UserManualModal } from './components/UserManualModal';
+import { useState } from 'react';
 
 function App() {
     const { inputs, updateInput, resetInputs, result } = useROICalculator();
+    const [isManualOpen, setIsManualOpen] = useState(false);
 
     return (
         <div className="flex min-h-screen">
@@ -33,7 +36,16 @@ function App() {
                                 <p className="text-sm text-slate-400">AI Coding Agent vs. Manual Labor Cost Analysis</p>
                             </div>
                         </div>
-                        <ExcelExportBtn inputs={inputs} />
+                        <div className="flex items-center gap-3">
+                            <button
+                                onClick={() => setIsManualOpen(true)}
+                                className="p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors border border-transparent hover:border-slate-700"
+                                title="Open User Manual"
+                            >
+                                <BookOpen size={20} />
+                            </button>
+                            <ExcelExportBtn inputs={inputs} />
+                        </div>
                     </div>
                 </header>
 
@@ -69,6 +81,8 @@ function App() {
                     </footer>
                 </div>
             </main>
+            {/* User Manual Modal */}
+            <UserManualModal isOpen={isManualOpen} onClose={() => setIsManualOpen(false)} />
         </div>
     );
 }
