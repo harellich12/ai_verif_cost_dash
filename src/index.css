@@ -1,0 +1,69 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    @apply bg-background text-foreground antialiased;
+  }
+  
+  body {
+    @apply min-h-screen font-sans;
+  }
+}
+
+@layer components {
+  .card {
+    @apply bg-background-card rounded-xl border border-slate-700/50 shadow-card backdrop-blur-sm;
+  }
+  
+  .card-glass {
+    @apply bg-background-card/80 rounded-xl border border-slate-700/30 shadow-card backdrop-blur-md;
+  }
+  
+  .btn-primary {
+    @apply px-4 py-2 bg-accent hover:bg-accent-hover text-white font-medium rounded-lg 
+           transition-all duration-200 hover:shadow-glow active:scale-95;
+  }
+  
+  .btn-secondary {
+    @apply px-4 py-2 bg-slate-700 hover:bg-slate-600 text-slate-100 font-medium rounded-lg 
+           transition-all duration-200 active:scale-95;
+  }
+  
+  .input-field {
+    @apply w-full px-3 py-2 bg-slate-800 border border-slate-600 rounded-lg 
+           text-slate-100 placeholder-slate-500 
+           focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent
+           transition-all duration-200;
+  }
+  
+  .label {
+    @apply text-sm font-medium text-slate-300 mb-1.5 block;
+  }
+  
+  .kpi-card {
+    @apply card p-6 relative overflow-hidden transition-all duration-300 hover:scale-[1.02] hover:shadow-glow;
+  }
+  
+  .kpi-value {
+    @apply text-3xl font-bold bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent;
+  }
+  
+  .kpi-label {
+    @apply text-sm text-slate-400 mt-1;
+  }
+}
+
+@layer utilities {
+  .gradient-border {
+    @apply relative;
+  }
+  
+  .gradient-border::before {
+    content: '';
+    @apply absolute inset-0 rounded-xl p-[1px] bg-gradient-to-r from-blue-500 via-cyan-500 to-blue-500 -z-10;
+  }
+}
