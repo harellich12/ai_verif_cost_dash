@@ -171,9 +171,11 @@ export function KPICards({ result }: KPICardsProps) {
                         </div>
                         <div>
                             <div className="text-lg font-semibold text-amber-400">
-                                {result.apiVsGPUCrossoverJobsPerDay.toFixed(1)} jobs/day
+                                {result.apiVsGPUCrossoverJobsPerDay > 0
+                                    ? `${result.apiVsGPUCrossoverJobsPerDay.toFixed(1)} /day`
+                                    : 'N/A (< 0)'}
                             </div>
-                            <div className="text-xs text-slate-500">Crossover Point</div>
+                            <div className="text-xs text-slate-500">Break-Even Interactive</div>
                         </div>
                         <div>
                             <div className={`text-lg font-semibold ${result.isAPIRecommended ? 'text-violet-400' : 'text-emerald-400'}`}>
@@ -186,8 +188,10 @@ export function KPICards({ result }: KPICardsProps) {
                     </div>
                     <div className="mt-3 pt-3 border-t border-slate-700/50 text-xs text-slate-500">
                         {result.isAPIRecommended
-                            ? `Start with Cloud API. It's cheaper until you exceed ${result.apiVsGPUCrossoverJobsPerDay.toFixed(0)} jobs/day per engineer.`
-                            : `Switch to Self-Hosted GPU. At your volume, you're saving ${formatCurrency(result.monthlyGPUCost - result.monthlyAPIBill, true)}/mo vs API.`
+                            ? `Start with Cloud API. It's cheaper until you exceed ${result.apiVsGPUCrossoverJobsPerDay.toFixed(1)} interactive jobs/day per engineer.`
+                            : result.apiVsGPUCrossoverJobsPerDay < 0
+                                ? `Switch to Self-Hosted GPU. Your regression volume alone costs more than the GPU rental.`
+                                : `Switch to Self-Hosted GPU. At your volume, you're saving ${formatCurrency(result.monthlyGPUCost - result.monthlyAPIBill, true)}/mo vs API.`
                         }
                     </div>
                 </div>

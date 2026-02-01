@@ -213,9 +213,15 @@ export function useROICalculator(): UseROICalculatorReturn {
         // Monthly API Bill = Cost_Per_File × Total_Monthly_Jobs
         const monthlyAPIBill = apiCostPerFile * totalMonthlyJobs;
 
-        // Crossover Analysis: Total jobs/month threshold where GPU becomes cheaper
-        // Solve: apiCostPerFile × totalJobs = monthlyGPUCost
-        const apiVsGPUCrossoverJobsPerDay = monthlyGPUCost / (apiCostPerFile * (numEngineers * CONSTANTS.WORKING_DAYS_PER_MONTH + CONSTANTS.CALENDAR_DAYS_PER_MONTH));
+        // Crossover Analysis: Interactive Jobs/day threshold
+        // Solve: apiCostPerFile × (InteractiveVol + RegressionVol) = monthlyGPUCost
+        // InteractiveVol = (monthlyGPUCost / apiCostPerFile) - RegressionVol
+        const maxApiVolumeForBreakEven = monthlyGPUCost / apiCostPerFile;
+        const breakEvenInteractiveVolume = maxApiVolumeForBreakEven - regressionVolume;
+
+        // Convert volume back to Jobs/Day per Engineer (divide by: Engineers * 20 days)
+        // If result is negative, it means regressions alone already cost more than GPU.
+        const apiVsGPUCrossoverJobsPerDay = breakEvenInteractiveVolume / (numEngineers * CONSTANTS.WORKING_DAYS_PER_MONTH);
 
         // Recommendation: API is cheaper if monthlyAPIBill < monthlyGPUCost
         const isAPIRecommended = monthlyAPIBill < monthlyGPUCost;

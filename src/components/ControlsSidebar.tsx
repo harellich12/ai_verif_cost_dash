@@ -407,10 +407,24 @@ function ControlSlider({ icon, label, value, config, onChange, isDefault, accent
                     {icon}
                     <span className="text-xs text-slate-300">{label}</span>
                 </div>
-                <span className={`text-xs font-mono font-semibold px-2 py-0.5 rounded ${isDefault ? 'text-slate-400 bg-slate-700/50' : `${colors.text} bg-slate-700/80 ring-1 ${colors.ring}`
-                    }`}>
-                    {value}{config.unit === '%' ? '%' : ''}
-                </span>
+                <div className="flex items-center gap-1">
+                    <input
+                        type="number"
+                        min={config.min}
+                        max={config.max}
+                        step={config.step}
+                        value={value}
+                        onChange={(e) => onChange(e.target.value)}
+                        className={`w-12 px-1 py-0.5 text-xs font-mono text-right border rounded focus:outline-none focus:ring-1 transition-all
+                            ${isDefault
+                                ? 'bg-slate-900/50 border-slate-700 text-slate-400'
+                                : `bg-slate-900/80 border-${colors.text.split('-')[1]}-500/50 ${colors.text} ring-1 ${colors.ring}`
+                            }
+                            focus:${colors.ring.replace('ring-', 'focus:ring-')}
+                        `}
+                    />
+                    <span className="text-xs text-slate-500 w-4">{config.unit === '%' ? '%' : ''}</span>
+                </div>
             </div>
             <div className="relative h-1.5 bg-slate-700 rounded-full overflow-hidden">
                 <div

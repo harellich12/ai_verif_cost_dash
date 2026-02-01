@@ -138,7 +138,7 @@ export function UserManualModal({ isOpen, onClose }: UserManualModalProps) {
                             </div>
                             <div className="bg-slate-800/30 p-4 rounded-lg border border-slate-700/50">
                                 <h4 className="font-semibold text-slate-200 mb-1">Excel Model</h4>
-                                <p className="text-sm">Downloads a `.xlsx` file with <strong>live formulas</strong>. Great for Finance teams to audit assumptions.</p>
+                                <p className="text-sm">Downloads a `.xlsx` file as a <strong>static snapshot</strong>. Captures the current scenario values for sharing.</p>
                             </div>
                         </div>
                     </section>
