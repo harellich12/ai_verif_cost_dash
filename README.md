@@ -6,18 +6,22 @@ A sophisticated financial modeling tool designed to help CTOs and Engineering Ma
 
 ## 🚀 Features
 
-- **Interactive Financial Modeling**: Real-time calculation of ROI, Net Present Value (NPV), and Break-Even analysis.
+- **Dual Compute Strategies**:
+    - **Self-Hosted GPU**: Model rental ($3/hr) or purchase ($30k/card) with depreciation cycles.
+    - **Cloud API**: Model per-token costs (Claude 3.5 Sonnet pricing) with **Split-Volume Logic** (Interactive vs. Regression).
+- **Advanced API Modeling**:
+    - Differentiates between **Interactive Jobs** (Engineer-driven, 20d/mo) and **Nightly Regressions** (CI/CD-driven, 30d/mo).
+    - Accounts for **Agent Retries** (token multiplier) and "Waste" cost.
 - **Dynamic Cash Flow Projections**: 12-month visual forecast of expenses vs. savings.
 - **Scenario Planning**:
-    - Compare **Cloud Rental** ($3/hr), **On-Premise Purchase** ($30k/card), or **Hybrid** strategies.
     - Adjust AI efficiency gains, GPU utilization, and bug reduction rates.
-- **Advanced Configuration**: Fine-tune **Electricity Costs**, **Admin Overhead**, and **Storage/Egress Fees**.
-- **Tax Implications**: Toggle **CapEx Depreciation Tax Credits** (21%) for On-Prem hardware.
+    - Compare **API vs. GPU** Break-Even points (Blended Volume).
+- **Advanced Configuration**: Fine-tune **Depreciation Period** (12-60mo), **Electricity Costs**, and **Admin Overhead**.
 - **Risk Analysis**: Quantify the financial impact of AI-driven bug reduction (avoiding silicon respins).
 - **Executive Summary**: Auto-generated business recommendations based on model outputs.
 - **Export Capabilities**:
     - **PDF Brief**: One-click confidential strategy report.
-    - **Excel Model**: Fully interactive `.xlsx` with live formulas.
+    - **Excel Snapshot**: "Safe Mode" export (.xlsx) with granular cost breakdowns and 100% data parity (no formulas).
 
 ## 🛠️ Tech Stack
 
@@ -48,19 +52,20 @@ A sophisticated financial modeling tool designed to help CTOs and Engineering Ma
 ## 📖 Usage Guide
 
 ### 1. Configure Inputs (Left Sidebar)
-- **Team Scale**: Set current number of engineers and desired number of GPUs.
-- **Performance**: Adjust "AI Efficiency Gain" (how much time AI saves per engineer) and "GPU Utilization".
-- **Risk Profile**: Set baseline bug probability and how much AI reduces that risk.
-- **Deployment Mode**: Choose **Cloud**, **On-Prem**, or **Hybrid**.
+- **Compute Mode**: Choose **Self-Hosted** (GPU) or **Cloud API**.
+    - If **Cloud API**: Configure `Interactive Jobs/Day`, `Regression Runs/Night`, and `Avg. Retries`.
+    - If **Self-Hosted**: Configure `Number of GPUs` and `Depreciation Period`.
+- **Resources**: Set the number of verification engineers.
+- **Performance**: Adjust "AI Efficiency Gain" and "Bug Reduction Probability".
 - **Advanced Settings**: (Collapsed by default)
-    - Customize **Electricity Rate** ($/kWh).
-    - Set **IT Admin Overhead** (%).
-    - Add **Storage & Egress** costs.
+    - Customize **Electricity Rate**, **Admin Overhead**, and **Storage/Egress**.
+    - Adjust **Hardware Depreciation** (default 24 months).
 
 ### 2. Analyze Results
 - **KPI Cards**: Review Net Savings, ROI %, Break-Even Month, and Risk Reduction Value.
-- **Charts**: Visualize the "Cumulative Savings" vs. "Cumulative Cost" crossover point.
-- **Executive Summary**: Read the generated strategic recommendation at the bottom.
+- **Charts**: Visualize the "Cumulative Savings" vs. "Cumulative Cost" crossover.
+- **API Comparison**: In Cloud API mode, see the **Break-Even Volume** where GPU becomes cheaper.
+- **Executive Summary**: Read the strategic recommendation (e.g., "Switch to Self-Hosted if volume > 850 jobs/day").
 
 ### 3. Share & Export
 - **Export PDF**: Click the file icon in the header for a professional "Confidential" brief.

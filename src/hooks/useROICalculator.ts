@@ -59,6 +59,11 @@ export function useROICalculator(): UseROICalculatorReturn {
             electricityRate,
             adminOverhead,
             storageCost,
+            // V4: API inputs
+            interactiveJobsPerDay,
+            regressionRunsPerNight,
+            avgAgentRetries,
+            depreciationMonths,
         } = inputs;
 
         // Convert percentages to decimals
@@ -82,7 +87,7 @@ export function useROICalculator(): UseROICalculatorReturn {
         // === V2: On-Prem Costs (Fixed, doesn't scale with utilization) ===
         const onPremGPUs = numGPUs * onPremFraction;
         const onPremHardwareCost = onPremGPUs > 0
-            ? ((onPremGPUs * CONSTANTS.H100_GPU_PURCHASE) + CONSTANTS.H100_CHASSIS_OVERHEAD) / CONSTANTS.DEPRECIATION_MONTHS
+            ? ((onPremGPUs * CONSTANTS.H100_GPU_PURCHASE) + CONSTANTS.H100_CHASSIS_OVERHEAD) / depreciationMonths
             : 0;
 
         // V2: Power & Cooling for On-Prem
@@ -187,6 +192,34 @@ export function useROICalculator(): UseROICalculatorReturn {
         const riskValueWithAI = reducedBugProb * CONSTANTS.SILICON_RESPIN_COST;
         const riskReduction = baselineRiskValue - riskValueWithAI;
 
+        // === V4: API Cost Calculations (Updated with Retry Multiplier & Split Volume) ===
+        // Token multiplier: base tokens × (1 + retries)
+        const tokenMultiplier = 1 + avgAgentRetries;
+        const tokensPerFileInput = CONSTANTS.API_BASE_TOKENS_INPUT * tokenMultiplier;
+        const tokensPerFileOutput = CONSTANTS.API_BASE_TOKENS_OUTPUT * tokenMultiplier;
+
+        // API Cost per File = (input_tokens/1M × input_price) + (output_tokens/1M × output_price)
+        const apiCostPerFile =
+            (tokensPerFileInput / 1_000_000) * CONSTANTS.API_CLAUDE_INPUT_PRICE +
+            (tokensPerFileOutput / 1_000_000) * CONSTANTS.API_CLAUDE_OUTPUT_PRICE;
+
+        // V4: Split Volume Calculation
+        // Interactive: Jobs × Engineers × 20 business days
+        // Regression: Runs × 30 calendar days (team-wide, not per-engineer)
+        const interactiveVolume = interactiveJobsPerDay * numEngineers * CONSTANTS.WORKING_DAYS_PER_MONTH;
+        const regressionVolume = regressionRunsPerNight * CONSTANTS.CALENDAR_DAYS_PER_MONTH;
+        const totalMonthlyJobs = interactiveVolume + regressionVolume;
+
+        // Monthly API Bill = Cost_Per_File × Total_Monthly_Jobs
+        const monthlyAPIBill = apiCostPerFile * totalMonthlyJobs;
+
+        // Crossover Analysis: Total jobs/month threshold where GPU becomes cheaper
+        // Solve: apiCostPerFile × totalJobs = monthlyGPUCost
+        const apiVsGPUCrossoverJobsPerDay = monthlyGPUCost / (apiCostPerFile * (numEngineers * CONSTANTS.WORKING_DAYS_PER_MONTH + CONSTANTS.CALENDAR_DAYS_PER_MONTH));
+
+        // Recommendation: API is cheaper if monthlyAPIBill < monthlyGPUCost
+        const isAPIRecommended = monthlyAPIBill < monthlyGPUCost;
+
         return {
             monthlyData,
             totalGPUCost,
@@ -200,6 +233,11 @@ export function useROICalculator(): UseROICalculatorReturn {
             monthlyGPUCost,
             monthlyEngineerValueSaved,
             opExDelta,
+            // V3: API cost comparison
+            apiCostPerFile,
+            monthlyAPIBill,
+            apiVsGPUCrossoverJobsPerDay,
+            isAPIRecommended,
         };
     }, [inputs]);
 

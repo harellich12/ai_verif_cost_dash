@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { CalculatorInputs, INPUT_CONFIGS, getDefaultInputs } from '../constants';
-import { RotateCcw, Cpu, Users, Zap, Activity, Bug, Shield, Cloud, Server, Combine, ChevronDown, ChevronUp, Settings } from 'lucide-react';
+import { CalculatorInputs, INPUT_CONFIGS, getDefaultInputs, CONSTANTS } from '../constants';
+import { RotateCcw, Cpu, Users, Zap, Activity, Bug, Shield, Cloud, Server, Combine, ChevronDown, ChevronUp, Settings, Globe, Briefcase } from 'lucide-react';
 
 interface ControlsSidebarProps {
     inputs: CalculatorInputs;
@@ -45,6 +45,39 @@ export function ControlsSidebar({ inputs, onInputChange, onReset }: ControlsSide
             {/* Scrollable Content */}
             <div className="flex-1 overflow-y-auto p-4 space-y-1">
 
+                {/* V3: Compute Mode Section */}
+                <ControlSection title="Compute Mode" icon={<Cpu size={14} />}>
+                    <div className="bg-slate-800/50 rounded-lg p-3">
+                        <div className="flex items-center justify-between mb-3">
+                            <span className="text-xs text-slate-400 uppercase tracking-wide">AI Processing Path</span>
+                        </div>
+                        {/* 2-way Toggle */}
+                        <div className="grid grid-cols-2 gap-2 mb-3">
+                            <StrategyButton
+                                icon={<Server size={14} />}
+                                label="Self-Hosted"
+                                isActive={inputs.computeMode === 'self-hosted'}
+                                onClick={() => onInputChange('computeMode', 'self-hosted')}
+                            />
+                            <StrategyButton
+                                icon={<Globe size={14} />}
+                                label="Cloud API"
+                                isActive={inputs.computeMode === 'cloud-api'}
+                                onClick={() => onInputChange('computeMode', 'cloud-api')}
+                            />
+                        </div>
+
+                        {/* Mode Description */}
+                        <div className="text-[10px] text-slate-500">
+                            {inputs.computeMode === 'self-hosted' ? (
+                                <span>⚡ Self-Hosted: Pay for GPU infrastructure (rental or purchase)</span>
+                            ) : (
+                                <span>☁️ Cloud API: Pay per token usage (Claude API pricing)</span>
+                            )}
+                        </div>
+                    </div>
+                </ControlSection>
+
                 {/* Resources Section */}
                 <ControlSection title="Resources" icon={<Users size={14} />}>
                     <ControlSlider
@@ -56,15 +89,72 @@ export function ControlsSidebar({ inputs, onInputChange, onReset }: ControlsSide
                         isDefault={inputs.numEngineers === defaults.numEngineers}
                         accentColor="cyan"
                     />
-                    <ControlSlider
-                        icon={<Cpu size={14} className="text-green-400" />}
-                        label="H100 GPUs"
-                        value={inputs.numGPUs}
-                        config={INPUT_CONFIGS.numGPUs}
-                        onChange={(v) => handleSliderChange('numGPUs', v)}
-                        isDefault={inputs.numGPUs === defaults.numGPUs}
-                        accentColor="green"
-                    />
+                    {/* GPU count only shown in self-hosted mode */}
+                    {inputs.computeMode === 'self-hosted' && (
+                        <ControlSlider
+                            icon={<Cpu size={14} className="text-green-400" />}
+                            label="H100 GPUs"
+                            value={inputs.numGPUs}
+                            config={INPUT_CONFIGS.numGPUs}
+                            onChange={(v) => handleSliderChange('numGPUs', v)}
+                            isDefault={inputs.numGPUs === defaults.numGPUs}
+                            accentColor="green"
+                        />
+                    )}
+                    {/* V4: API Mode sliders - Interactive, Regression, Retries */}
+                    {inputs.computeMode === 'cloud-api' && (
+                        <>
+                            <ControlSlider
+                                icon={<Briefcase size={14} className="text-violet-400" />}
+                                label="Interactive Jobs/Day"
+                                value={inputs.interactiveJobsPerDay}
+                                config={INPUT_CONFIGS.interactiveJobsPerDay}
+                                onChange={(v) => handleSliderChange('interactiveJobsPerDay', v)}
+                                isDefault={inputs.interactiveJobsPerDay === defaults.interactiveJobsPerDay}
+                                accentColor="purple"
+                            />
+                            <ControlSlider
+                                icon={<Activity size={14} className="text-blue-400" />}
+                                label="Regression Runs/Night"
+                                value={inputs.regressionRunsPerNight}
+                                config={INPUT_CONFIGS.regressionRunsPerNight}
+                                onChange={(v) => handleSliderChange('regressionRunsPerNight', v)}
+                                isDefault={inputs.regressionRunsPerNight === defaults.regressionRunsPerNight}
+                                accentColor="blue"
+                            />
+                            <ControlSlider
+                                icon={<RotateCcw size={14} className="text-amber-400" />}
+                                label="Avg. Agent Retries"
+                                value={inputs.avgAgentRetries}
+                                config={INPUT_CONFIGS.avgAgentRetries}
+                                onChange={(v) => handleSliderChange('avgAgentRetries', v)}
+                                isDefault={inputs.avgAgentRetries === defaults.avgAgentRetries}
+                                accentColor="orange"
+                            />
+                            {/* V4: Dynamic API Cost estimate */}
+                            <div className="bg-slate-800/50 rounded-lg p-3 mt-2">
+                                <div className="text-xs text-slate-400 mb-2">API Cost Estimate</div>
+                                <div className="grid grid-cols-2 gap-2 text-xs">
+                                    <div>
+                                        <span className="text-slate-500">Tokens/File:</span>
+                                        <span className="text-violet-400 ml-1 font-mono">
+                                            {((CONSTANTS.API_BASE_TOKENS_INPUT + CONSTANTS.API_BASE_TOKENS_OUTPUT) * (1 + inputs.avgAgentRetries) / 1000).toFixed(0)}k
+                                        </span>
+                                    </div>
+                                    <div>
+                                        <span className="text-slate-500">Cost/File:</span>
+                                        <span className="text-violet-400 ml-1 font-mono">
+                                            ${((CONSTANTS.API_BASE_TOKENS_INPUT * (1 + inputs.avgAgentRetries) / 1_000_000 * CONSTANTS.API_CLAUDE_INPUT_PRICE) +
+                                                (CONSTANTS.API_BASE_TOKENS_OUTPUT * (1 + inputs.avgAgentRetries) / 1_000_000 * CONSTANTS.API_CLAUDE_OUTPUT_PRICE)).toFixed(2)}
+                                        </span>
+                                    </div>
+                                </div>
+                                <div className="mt-2 text-[10px] text-slate-500">
+                                    ×{1 + inputs.avgAgentRetries} passes | Interactive ×20d + Regression ×30d
+                                </div>
+                            </div>
+                        </>
+                    )}
                 </ControlSection>
 
                 {/* Performance Section */}
@@ -78,15 +168,17 @@ export function ControlsSidebar({ inputs, onInputChange, onReset }: ControlsSide
                         isDefault={inputs.aiEfficiencyGain === defaults.aiEfficiencyGain}
                         accentColor="yellow"
                     />
-                    <ControlSlider
-                        icon={<Activity size={14} className="text-purple-400" />}
-                        label="GPU Utilization"
-                        value={inputs.gpuUtilization}
-                        config={INPUT_CONFIGS.gpuUtilization}
-                        onChange={(v) => handleSliderChange('gpuUtilization', v)}
-                        isDefault={inputs.gpuUtilization === defaults.gpuUtilization}
-                        accentColor="purple"
-                    />
+                    {inputs.computeMode === 'self-hosted' && (
+                        <ControlSlider
+                            icon={<Activity size={14} className="text-purple-400" />}
+                            label="GPU Utilization"
+                            value={inputs.gpuUtilization}
+                            config={INPUT_CONFIGS.gpuUtilization}
+                            onChange={(v) => handleSliderChange('gpuUtilization', v)}
+                            isDefault={inputs.gpuUtilization === defaults.gpuUtilization}
+                            accentColor="purple"
+                        />
+                    )}
                 </ControlSection>
 
                 {/* Risk Analysis Section */}
@@ -111,83 +203,85 @@ export function ControlsSidebar({ inputs, onInputChange, onReset }: ControlsSide
                     />
                 </ControlSection>
 
-                {/* Deployment Strategy Section - V2 */}
-                <ControlSection title="Deployment Strategy" icon={<Cloud size={14} />}>
-                    <div className="bg-slate-800/50 rounded-lg p-3">
-                        <div className="flex items-center justify-between mb-3">
-                            <span className="text-xs text-slate-400 uppercase tracking-wide">Infrastructure Mode</span>
-                        </div>
-                        {/* 3-way Toggle */}
-                        <div className="grid grid-cols-3 gap-1 mb-3">
-                            <StrategyButton
-                                icon={<Cloud size={14} />}
-                                label="Cloud"
-                                isActive={inputs.deploymentStrategy === 'cloud'}
-                                onClick={() => onInputChange('deploymentStrategy', 'cloud')}
-                            />
-                            <StrategyButton
-                                icon={<Combine size={14} />}
-                                label="Hybrid"
-                                isActive={inputs.deploymentStrategy === 'hybrid'}
-                                onClick={() => onInputChange('deploymentStrategy', 'hybrid')}
-                            />
-                            <StrategyButton
-                                icon={<Server size={14} />}
-                                label="On-Prem"
-                                isActive={inputs.deploymentStrategy === 'onprem'}
-                                onClick={() => onInputChange('deploymentStrategy', 'onprem')}
-                            />
-                        </div>
-
-                        {/* Conditional Hybrid Slider */}
-                        {/* Conditional Hybrid Slider */}
-                        {inputs.deploymentStrategy === 'hybrid' && (
-                            <div className="mt-3 pt-3 border-t border-slate-700/50">
-                                <ControlSlider
-                                    icon={<Server size={14} className="text-orange-400" />}
-                                    label="On-Prem Workload"
-                                    value={inputs.onPremPercent}
-                                    config={INPUT_CONFIGS.onPremPercent}
-                                    onChange={(v) => handleSliderChange('onPremPercent', v)}
-                                    isDefault={inputs.onPremPercent === defaults.onPremPercent}
-                                    accentColor="orange"
+                {/* Deployment Strategy Section - V2 (Only for self-hosted mode) */}
+                {inputs.computeMode === 'self-hosted' && (
+                    <ControlSection title="Deployment Strategy" icon={<Cloud size={14} />}>
+                        <div className="bg-slate-800/50 rounded-lg p-3">
+                            <div className="flex items-center justify-between mb-3">
+                                <span className="text-xs text-slate-400 uppercase tracking-wide">Infrastructure Mode</span>
+                            </div>
+                            {/* 3-way Toggle */}
+                            <div className="grid grid-cols-3 gap-1 mb-3">
+                                <StrategyButton
+                                    icon={<Cloud size={14} />}
+                                    label="Cloud"
+                                    isActive={inputs.deploymentStrategy === 'cloud'}
+                                    onClick={() => onInputChange('deploymentStrategy', 'cloud')}
+                                />
+                                <StrategyButton
+                                    icon={<Combine size={14} />}
+                                    label="Hybrid"
+                                    isActive={inputs.deploymentStrategy === 'hybrid'}
+                                    onClick={() => onInputChange('deploymentStrategy', 'hybrid')}
+                                />
+                                <StrategyButton
+                                    icon={<Server size={14} />}
+                                    label="On-Prem"
+                                    isActive={inputs.deploymentStrategy === 'onprem'}
+                                    onClick={() => onInputChange('deploymentStrategy', 'onprem')}
                                 />
                             </div>
-                        )}
 
-                        {/* Tax Depreciation Toggle */}
-                        {inputs.deploymentStrategy !== 'cloud' && (
-                            <div className="mt-3 pt-3 border-t border-slate-700/50 flex items-center justify-between">
-                                <div className="flex items-center gap-2">
-                                    <span className="text-xs text-slate-300">Include Tax Depreciation</span>
-                                    <span className="text-[10px] text-slate-500">(21% Credit)</span>
-                                </div>
-                                <button
-                                    onClick={() => onInputChange('includeTaxDepreciation', !inputs.includeTaxDepreciation)}
-                                    className={`w-8 h-4 rounded-full transition-colors duration-200 relative ${inputs.includeTaxDepreciation ? 'bg-emerald-500' : 'bg-slate-700'
-                                        }`}
-                                    title="Toggle Depreciation Tax Credit"
-                                >
-                                    <div className={`absolute top-0.5 left-0.5 w-3 h-3 bg-white rounded-full transition-transform duration-200 ${inputs.includeTaxDepreciation ? 'translate-x-4' : 'translate-x-0'
-                                        }`} />
-                                </button>
-                            </div>
-                        )}
-
-                        {/* Cost Summary */}
-                        <div className="mt-3 pt-3 border-t border-slate-700/50 text-[10px] text-slate-500">
-                            {inputs.deploymentStrategy === 'cloud' && (
-                                <span>💨 Cloud: $3/hr × utilization (scales with usage)</span>
-                            )}
-                            {inputs.deploymentStrategy === 'onprem' && (
-                                <span>🏢 On-Prem: $30K/GPU + power {inputs.includeTaxDepreciation ? '- tax credit ' : ''}(fixed)</span>
-                            )}
+                            {/* Conditional Hybrid Slider */}
+                            {/* Conditional Hybrid Slider */}
                             {inputs.deploymentStrategy === 'hybrid' && (
-                                <span>⚡ Hybrid: {inputs.onPremPercent}% On-Prem, {100 - inputs.onPremPercent}% Cloud Burst</span>
+                                <div className="mt-3 pt-3 border-t border-slate-700/50">
+                                    <ControlSlider
+                                        icon={<Server size={14} className="text-orange-400" />}
+                                        label="On-Prem Workload"
+                                        value={inputs.onPremPercent}
+                                        config={INPUT_CONFIGS.onPremPercent}
+                                        onChange={(v) => handleSliderChange('onPremPercent', v)}
+                                        isDefault={inputs.onPremPercent === defaults.onPremPercent}
+                                        accentColor="orange"
+                                    />
+                                </div>
                             )}
+
+                            {/* Tax Depreciation Toggle */}
+                            {inputs.deploymentStrategy !== 'cloud' && (
+                                <div className="mt-3 pt-3 border-t border-slate-700/50 flex items-center justify-between">
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-xs text-slate-300">Include Tax Depreciation</span>
+                                        <span className="text-[10px] text-slate-500">(21% Credit)</span>
+                                    </div>
+                                    <button
+                                        onClick={() => onInputChange('includeTaxDepreciation', !inputs.includeTaxDepreciation)}
+                                        className={`w-8 h-4 rounded-full transition-colors duration-200 relative ${inputs.includeTaxDepreciation ? 'bg-emerald-500' : 'bg-slate-700'
+                                            }`}
+                                        title="Toggle Depreciation Tax Credit"
+                                    >
+                                        <div className={`absolute top-0.5 left-0.5 w-3 h-3 bg-white rounded-full transition-transform duration-200 ${inputs.includeTaxDepreciation ? 'translate-x-4' : 'translate-x-0'
+                                            }`} />
+                                    </button>
+                                </div>
+                            )}
+
+                            {/* Cost Summary */}
+                            <div className="mt-3 pt-3 border-t border-slate-700/50 text-[10px] text-slate-500">
+                                {inputs.deploymentStrategy === 'cloud' && (
+                                    <span>💨 Cloud: $3/hr × utilization (scales with usage)</span>
+                                )}
+                                {inputs.deploymentStrategy === 'onprem' && (
+                                    <span>🏢 On-Prem: $30K/GPU + power {inputs.includeTaxDepreciation ? '- tax credit ' : ''}(fixed)</span>
+                                )}
+                                {inputs.deploymentStrategy === 'hybrid' && (
+                                    <span>⚡ Hybrid: {inputs.onPremPercent}% On-Prem, {100 - inputs.onPremPercent}% Cloud Burst</span>
+                                )}
+                            </div>
                         </div>
-                    </div>
-                </ControlSection>
+                    </ControlSection>
+                )}
 
                 {/* Advanced Settings */}
                 <div className="border border-slate-700/50 rounded-xl overflow-hidden bg-slate-800/20">
@@ -232,6 +326,16 @@ export function ControlsSidebar({ inputs, onInputChange, onReset }: ControlsSide
                                 onChange={(v) => handleSliderChange('storageCost', v)}
                                 isDefault={inputs.storageCost === defaults.storageCost}
                                 accentColor="cyan"
+                            />
+
+                            <ControlSlider
+                                icon={<Activity size={14} className="text-orange-400" />}
+                                label="Depreciation Period"
+                                value={inputs.depreciationMonths}
+                                config={INPUT_CONFIGS.depreciationMonths}
+                                onChange={(v) => handleSliderChange('depreciationMonths', v)}
+                                isDefault={inputs.depreciationMonths === defaults.depreciationMonths}
+                                accentColor="orange"
                             />
                         </div>
                     )}

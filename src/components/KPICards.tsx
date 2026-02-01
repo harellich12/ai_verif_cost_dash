@@ -1,6 +1,6 @@
 import { CalculationResult } from '../constants';
 import { formatCurrency, formatPercent } from '../utils/format';
-import { TrendingUp, TrendingDown, Target, ShieldCheck, DollarSign, Calendar } from 'lucide-react';
+import { TrendingUp, TrendingDown, Target, ShieldCheck, DollarSign, Calendar, ArrowLeftRight } from 'lucide-react';
 
 interface KPICardsProps {
     result: CalculationResult;
@@ -136,6 +136,59 @@ export function KPICards({ result }: KPICardsProps) {
                             </div>
                             <div className="text-xs text-slate-500">Total Engineering Savings</div>
                         </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* V3: API vs GPU Cost Comparison */}
+            <div className="kpi-card group col-span-1 md:col-span-2 lg:col-span-4">
+                <div className="absolute inset-0 bg-gradient-to-br from-violet-500/10 to-fuchsia-500/5 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                <div className="relative">
+                    <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center gap-2">
+                            <ArrowLeftRight className="w-5 h-5 text-violet-400" />
+                            <span className="text-sm font-medium text-slate-400">Compute Path Comparison</span>
+                        </div>
+                        <span className={`text-xs font-medium px-2 py-1 rounded-full ${result.isAPIRecommended
+                            ? 'bg-violet-500/20 text-violet-400'
+                            : 'bg-emerald-500/20 text-emerald-400'
+                            }`}>
+                            {result.isAPIRecommended ? '☁️ API Recommended' : '⚡ GPU Recommended'}
+                        </span>
+                    </div>
+                    <div className="grid grid-cols-4 gap-4">
+                        <div>
+                            <div className="text-lg font-semibold text-violet-400">
+                                {formatCurrency(result.monthlyAPIBill, true)}
+                            </div>
+                            <div className="text-xs text-slate-500">Monthly API Cost</div>
+                        </div>
+                        <div>
+                            <div className="text-lg font-semibold text-slate-300">
+                                {formatCurrency(result.monthlyGPUCost, true)}
+                            </div>
+                            <div className="text-xs text-slate-500">Monthly GPU Cost</div>
+                        </div>
+                        <div>
+                            <div className="text-lg font-semibold text-amber-400">
+                                {result.apiVsGPUCrossoverJobsPerDay.toFixed(1)} jobs/day
+                            </div>
+                            <div className="text-xs text-slate-500">Crossover Point</div>
+                        </div>
+                        <div>
+                            <div className={`text-lg font-semibold ${result.isAPIRecommended ? 'text-violet-400' : 'text-emerald-400'}`}>
+                                {formatCurrency(Math.abs(result.monthlyAPIBill - result.monthlyGPUCost), true)}/mo
+                            </div>
+                            <div className="text-xs text-slate-500">
+                                {result.isAPIRecommended ? 'API saves' : 'GPU saves'}
+                            </div>
+                        </div>
+                    </div>
+                    <div className="mt-3 pt-3 border-t border-slate-700/50 text-xs text-slate-500">
+                        {result.isAPIRecommended
+                            ? `Start with Cloud API. It's cheaper until you exceed ${result.apiVsGPUCrossoverJobsPerDay.toFixed(0)} jobs/day per engineer.`
+                            : `Switch to Self-Hosted GPU. At your volume, you're saving ${formatCurrency(result.monthlyGPUCost - result.monthlyAPIBill, true)}/mo vs API.`
+                        }
                     </div>
                 </div>
             </div>

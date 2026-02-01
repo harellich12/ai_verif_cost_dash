@@ -44,7 +44,7 @@ function App() {
                             >
                                 <BookOpen size={20} />
                             </button>
-                            <ExcelExportBtn inputs={inputs} />
+                            <ExcelExportBtn inputs={inputs} result={result} />
                         </div>
                     </div>
                 </header>

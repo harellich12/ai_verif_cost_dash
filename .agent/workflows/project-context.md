@@ -50,3 +50,19 @@ The exported file must contain two sheets:
     * *Formula:* GPU Power (700W) * PUE (1.5) * Hours * $/kWh ($0.12).
 * **Utilization Rate:** Cloud costs scale linearly with usage. On-Prem costs are fixed regardless of usage.
     * *Logic:* If 'Cloud' is selected, multiply cost by `Utilization %`. If 'On-Prem', cost is flat 100%.
+
+## 8. API Cost Logic (Path B)
+* **Toggle:** "Deployment Mode" -> [Self-Hosted GPU] vs [Cloud API].
+* **Constants:**
+    * `Claude_Input_Price` = $3.00 / 1M tokens.
+    * `Claude_Output_Price` = $15.00 / 1M tokens.
+    * `Tokens_Per_File_Input` = 150,000 (3 loops of 50k context).
+    * `Tokens_Per_File_Output` = 6,000 (3 loops of 2k code).
+* **Formula:**
+    * `Cost_Per_File` = (150k/1M * 3.00) + (6k/1M * 15.00) ≈ $0.54.
+    * `Monthly_API_Bill` = `Cost_Per_File` * `Daily_Jobs_Per_Engineer` * `Team_Size` * 20.
+* **Comparison Logic:**
+    * IF `Monthly_API_Bill` < `Monthly_GPU_Rental` ($2,000/mo for H100):
+        * Recommendation: "START with API. It is cheaper until you hit X jobs/day."
+    * IF `Monthly_API_Bill` > `Monthly_GPU_Rental`:
+        * Recommendation: "SWITCH to Self-Hosted. You are burning cash on API fees."

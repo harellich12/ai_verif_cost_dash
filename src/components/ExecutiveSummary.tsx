@@ -45,6 +45,17 @@ function generateRecommendation(inputs: CalculatorInputs, result: CalculationRes
             `Document efficiency gains to build case for further AI adoption`,
         ];
 
+        // V3: Add API vs GPU comparison suggestion
+        if (result.isAPIRecommended) {
+            suggestions.push(
+                `Consider Cloud API: At ${inputs.interactiveJobsPerDay} interactive jobs/day + ${inputs.regressionRunsPerNight} regressions/night, API costs ${formatCurrency(result.monthlyAPIBill, true)}/mo vs ${formatCurrency(result.monthlyGPUCost, true)}/mo for GPU`
+            );
+        } else {
+            suggestions.push(
+                `GPU is optimal: At your volume, Self-Hosted saves ${formatCurrency(result.monthlyGPUCost - result.monthlyAPIBill, true)}/mo vs Cloud API`
+            );
+        }
+
         return { isPositive: true, headline, body, suggestions };
     } else {
         // Negative ROI
@@ -60,6 +71,13 @@ function generateRecommendation(inputs: CalculatorInputs, result: CalculationRes
             `Consider reducing GPU count or switching to on-demand rental`,
             `Explore hybrid approaches with selective AI deployment`,
         ];
+
+        // V3: Add API alternative suggestion when ROI is negative
+        if (result.isAPIRecommended) {
+            suggestions.unshift(
+                `☁️ Consider Cloud API: Only ${formatCurrency(result.monthlyAPIBill, true)}/mo vs ${formatCurrency(result.monthlyGPUCost, true)}/mo for GPU at your current scale`
+            );
+        }
 
         return { isPositive: false, headline, body, suggestions };
     }
@@ -126,7 +144,7 @@ export function ExecutiveSummary({ inputs, result }: ExecutiveSummaryProps) {
                 }`}>
                 <div className="flex items-center justify-between">
                     <span className="text-xs text-slate-500">
-                        Based on {inputs.numEngineers} engineers, {inputs.numGPUs} GPUs, {inputs.aiEfficiencyGain}% efficiency gain
+                        Based on {inputs.numEngineers} engineers, {inputs.computeMode === 'self-hosted' ? `${inputs.numGPUs} GPUs` : `${inputs.interactiveJobsPerDay} jobs/day + ${inputs.regressionRunsPerNight} regressions`}, {inputs.aiEfficiencyGain}% efficiency gain
                     </span>
                     <span className={`text-xs font-medium px-2 py-1 rounded-full ${recommendation.isPositive
                         ? 'bg-emerald-500/20 text-emerald-400'
