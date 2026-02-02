@@ -56,7 +56,8 @@ describe('useVaaSEstimator', () => {
         const { result } = renderHook(() => useVaaSEstimator());
 
         // Per-block savings × 20 blocks
-        const perBlockSavings = result.current.result.revenueGained + result.current.result.idleCashSaved;
+        // Per-block savings × 20 blocks
+        const perBlockSavings = result.current.result.totalCashBurnPrevented;
         const expected = perBlockSavings * 20; // default annualBlockCount
 
         expect(result.current.result.projectedAnnualEfficiency).toBeCloseTo(expected, 0);
