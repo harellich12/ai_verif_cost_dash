@@ -25,6 +25,29 @@ export function VaaSSidebar({ inputs, onInputChange, onReset }: VaaSSidebarProps
         large: 'High (12 mo)',
     };
 
+    const BLOCK_PRESETS: Record<string, BlockComplexity | null> = {
+        'UART Controller': 'small',
+        'SPI/I2C Interface': 'small',
+        'DDR Memory Controller': 'medium',
+        'USB Controller': 'medium',
+        'Ethernet MAC': 'medium',
+        'PCIe Controller': 'large',
+        'Custom IP Block': null,
+    };
+
+    const handleBlockTypeChange = (selectedType: string) => {
+        // 1. Update the Block Type
+        onInputChange('blockType', selectedType);
+
+        // 2. Look up Smart Preset
+        const presetComplexity = BLOCK_PRESETS[selectedType];
+
+        // 3. Apply Preset if exists (Auto-fill downstream inputs)
+        if (presetComplexity) {
+            onInputChange('blockComplexity', presetComplexity);
+        }
+    };
+
     return (
         <aside className="w-80 bg-slate-900 border-r border-slate-700/50 overflow-y-auto flex flex-col">
             {/* Header */}
@@ -57,7 +80,7 @@ export function VaaSSidebar({ inputs, onInputChange, onReset }: VaaSSidebarProps
                     <div className="relative">
                         <select
                             value={inputs.blockType}
-                            onChange={(e) => onInputChange('blockType', e.target.value)}
+                            onChange={(e) => handleBlockTypeChange(e.target.value)}
                             className="w-full appearance-none bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent cursor-pointer"
                         >
                             {VAAS_CONSTANTS.BLOCK_TYPES.map((type) => (
@@ -87,8 +110,8 @@ export function VaaSSidebar({ inputs, onInputChange, onReset }: VaaSSidebarProps
                                 key={level}
                                 onClick={() => onInputChange('blockComplexity', level)}
                                 className={`flex-1 py-2 text-xs font-medium rounded-lg transition-all ${inputs.blockComplexity === level
-                                        ? 'bg-violet-500 text-white'
-                                        : 'bg-slate-800 text-slate-400 hover:bg-slate-700'
+                                    ? 'bg-violet-500 text-white'
+                                    : 'bg-slate-800 text-slate-400 hover:bg-slate-700'
                                     }`}
                             >
                                 {level.charAt(0).toUpperCase() + level.slice(1)}
@@ -123,12 +146,12 @@ export function VaaSSidebar({ inputs, onInputChange, onReset }: VaaSSidebarProps
                     </div>
                 </div>
 
-                {/* Revenue Input with Tooltip */}
+                {/* Estimated RTL Delay Slider */}
                 <div className="space-y-2">
                     <div className="flex items-center justify-between">
                         <label className="flex items-center gap-2 text-sm text-slate-400">
-                            <DollarSign size={14} />
-                            Monthly Revenue at Risk
+                            <Layers size={14} />
+                            Est. RTL Delay
                             <div className="relative">
                                 <button
                                     onMouseEnter={() => setIsTooltipVisible(true)}
@@ -139,31 +162,31 @@ export function VaaSSidebar({ inputs, onInputChange, onReset }: VaaSSidebarProps
                                 </button>
                                 {isTooltipVisible && (
                                     <div className="absolute left-0 top-6 w-64 p-3 bg-slate-800 border border-slate-700 rounded-lg shadow-xl z-50 text-xs text-slate-300">
-                                        <strong className="text-violet-400">Cost of Delay Estimation:</strong>
+                                        <strong className="text-violet-400">Burn Rate Sensitivity:</strong>
                                         <p className="mt-1">
-                                            Ask your Product Manager: "If we miss our tape-out date by 1 month,
-                                            how much potential revenue is at risk?"
-                                        </p>
-                                        <p className="mt-2 text-slate-500">
-                                            This value will be multiplied by months saved to calculate Revenue Gained.
+                                            How many weeks does your team usually wait for RTL drops?
+                                            This causes "Wait Waste" (Internal Burn) which VaaS eliminates.
                                         </p>
                                     </div>
                                 )}
                             </div>
                         </label>
+                        <span className="text-sm font-medium text-amber-400">
+                            {inputs.estRtlDelayWeeks} weeks
+                        </span>
                     </div>
-                    <div className="relative">
-                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500">$</span>
-                        <input
-                            type="number"
-                            min={VAAS_INPUT_CONFIGS.monthlyRevenueValue.min}
-                            max={VAAS_INPUT_CONFIGS.monthlyRevenueValue.max}
-                            step={VAAS_INPUT_CONFIGS.monthlyRevenueValue.step}
-                            value={inputs.monthlyRevenueValue}
-                            onChange={(e) => onInputChange('monthlyRevenueValue', Number(e.target.value))}
-                            className="w-full bg-slate-800 border border-slate-700 rounded-lg pl-7 pr-12 py-2 text-sm text-slate-200 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent"
-                        />
-                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 text-xs">/mo</span>
+                    <input
+                        type="range"
+                        min={VAAS_INPUT_CONFIGS.estRtlDelayWeeks.min}
+                        max={VAAS_INPUT_CONFIGS.estRtlDelayWeeks.max}
+                        step={VAAS_INPUT_CONFIGS.estRtlDelayWeeks.step}
+                        value={inputs.estRtlDelayWeeks}
+                        onChange={(e) => onInputChange('estRtlDelayWeeks', Number(e.target.value))}
+                        className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-amber-400"
+                    />
+                    <div className="flex justify-between text-xs text-slate-500">
+                        <span>Best Case ({VAAS_INPUT_CONFIGS.estRtlDelayWeeks.min})</span>
+                        <span>Worst Case ({VAAS_INPUT_CONFIGS.estRtlDelayWeeks.max})</span>
                     </div>
                 </div>
 

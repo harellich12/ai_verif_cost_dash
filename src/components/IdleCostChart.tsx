@@ -103,6 +103,7 @@ export function IdleCostChart({ result }: IdleCostChartProps) {
                                 borderRadius: '8px',
                             }}
                             labelStyle={{ color: '#f1f5f9' }}
+                            cursor={{ fill: '#334155', opacity: 0.2 }}
                         />
                         <Bar
                             dataKey="activeCost"

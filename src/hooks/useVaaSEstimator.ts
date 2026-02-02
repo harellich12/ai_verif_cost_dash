@@ -41,7 +41,7 @@ export function useVaaSEstimator(): UseVaaSEstimatorReturn {
         const {
             blockComplexity,
             internalTeamSize,
-            monthlyRevenueValue,
+            estRtlDelayWeeks,
             vaasQuotePrice,
             annualBlockCount,
         } = inputs;
@@ -53,23 +53,38 @@ export function useVaaSEstimator(): UseVaaSEstimatorReturn {
         const weeksSaved = monthsSaved * VAAS_CONSTANTS.WEEKS_PER_MONTH;
 
         // === Cost Calculation ===
-        // Internal Team: Fixed cost for full duration (includes idle time)
+        // Engineer Monthly Burn Rate (per person)
         const engineerMonthlyCost = VAAS_CONSTANTS.ENGINEER_SALARY_YEARLY / VAAS_CONSTANTS.MONTHS_PER_YEAR;
-        const internalTeamCost = internalTeamSize * engineerMonthlyCost * traditionalDurationMonths;
+
+        // Internal Team Cost (Baseline w/o Delay)
+        const baseInternalTeamCost = internalTeamSize * engineerMonthlyCost * traditionalDurationMonths;
+
+        // 1. Cost of RTL Delay (Burn Rate Sensitivity)
+        // Delay Cost = Team Size * Weekly Burn * Delay Weeks
+        // Weekly Burn per person = Monthly / 4.33 approx
+        const engineerWeeklyCost = engineerMonthlyCost / VAAS_CONSTANTS.WEEKS_PER_MONTH;
+        const costOfRtlDelay = (internalTeamSize * engineerWeeklyCost) * estRtlDelayWeeks;
+
+        // Total Internal Cost = Base Execution + Delay Waste
+        const internalTeamCost = baseInternalTeamCost + costOfRtlDelay;
 
         // VaaS: Fixed quote price (no idle billing)
         const vaasCost = vaasQuotePrice;
 
-        // Idle Cash Saved: The "idle tax" avoided
-        // In traditional model, engineers are paid during wait/blocked time
+        // 2. Idle Cash Saved (Efficiency)
         // Assumption: ~30% of traditional timeline is idle/wait time
         const idleTimeFraction = 0.30;
-        const idleCashSaved = internalTeamCost * idleTimeFraction;
+        const idleCashSaved = baseInternalTeamCost * idleTimeFraction;
 
-        // === Revenue Impact ===
-        // Revenue gained by launching earlier
-        const weeklyRevenueValue = monthlyRevenueValue / VAAS_CONSTANTS.WEEKS_PER_MONTH;
-        const revenueGained = weeksSaved * weeklyRevenueValue;
+        // 3. Capacity Dividend (Hard Metric)
+        // FTE Months Saved = (Traditional Duration - VaaS Duration) * Team Size
+        const fteMonthsSaved = monthsSaved * internalTeamSize;
+
+        // 4. Total Cash Burn Prevented
+        // Combines "Delay Savings" (Avoiding the delay cost) + "Idle Savings" (Avoiding the idle tax)
+        // Note: VaaS eliminates the billing for the delay because it is fixed price scope.
+        // It also eliminates the idle time billing.
+        const totalCashBurnPrevented = costOfRtlDelay + idleCashSaved;
 
         // === Monthly Breakdown (Timeline Projection) ===
         const maxMonths = Math.ceil(traditionalDurationMonths);
@@ -82,11 +97,15 @@ export function useVaaSEstimator(): UseVaaSEstimatorReturn {
             // VaaS: Linear progress but 2x faster
             const vaasProgress = Math.min((month / vaasDurationMonths) * 100, 100);
 
-            // Cumulative costs
+            // Cumulative costs (Internal includes projected delay amortized? Or just base?)
+            // For simple chart, let's show Base Internal vs Fixed VaaS. 
+            // Delay is usually an "Oh no" add-on. We'll stick to base for the main line 
+            // line chart to keep it clean, or we could add it at end.
+            // Let's use Base for the timeline chart to be conservative.
             const traditionalCost = internalTeamSize * engineerMonthlyCost * month;
             const vaasMonthCost = month <= vaasDurationMonths ? vaasQuotePrice : vaasQuotePrice;
 
-            // Idle cost (only for traditional, accumulates during wait periods)
+            // Idle cost
             const idleCost = traditionalCost * idleTimeFraction;
 
             monthlyData.push({
@@ -100,9 +119,9 @@ export function useVaaSEstimator(): UseVaaSEstimatorReturn {
         }
 
         // === Projected Annual Efficiency ===
-        // If user runs N similar blocks per year, total savings = savings × N
-        const perBlockSavings = revenueGained + idleCashSaved;
-        const projectedAnnualEfficiency = perBlockSavings * annualBlockCount;
+        // If user runs N similar blocks per year
+        // Value = Cash Burn Prevented * Count
+        const projectedAnnualEfficiency = totalCashBurnPrevented * annualBlockCount;
         const projectedAnnualTimeSaved = monthsSaved * annualBlockCount;
 
         return {
@@ -112,8 +131,10 @@ export function useVaaSEstimator(): UseVaaSEstimatorReturn {
             weeksSaved,
             internalTeamCost,
             vaasCost,
+            fteMonthsSaved,
+            costOfRtlDelay,
+            totalCashBurnPrevented,
             idleCashSaved,
-            revenueGained,
             monthlyData,
             projectedAnnualEfficiency,
             projectedAnnualTimeSaved,

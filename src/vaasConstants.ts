@@ -52,18 +52,18 @@ export const VAAS_INPUT_CONFIGS: Record<string, VaaSInputConfig> = {
         min: 1,
         max: 20,
         step: 1,
-        default: 5,
+        default: 3, // Updated default per new requirement
         unit: 'engineers',
         tooltip: 'Number of verification engineers on your internal team',
     },
-    monthlyRevenueValue: {
-        label: 'Monthly Revenue at Risk',
-        min: 50_000,
-        max: 1_000_000,
-        step: 50_000,
-        default: 100_000,
-        unit: '$/mo',
-        tooltip: "Cost of Delay Estimation: Ask your Product Manager: 'If we miss our tape-out date by 1 month, how much potential revenue is at risk?'",
+    estRtlDelayWeeks: {
+        label: 'Est. RTL Delay',
+        min: 0,
+        max: 12,
+        step: 1,
+        default: 2,
+        unit: 'weeks',
+        tooltip: 'Expected delay in RTL delivery that burns engineering cash (waiting time). VaaS eliminates this billing risk.',
     },
     vaasQuotePrice: {
         label: 'VaaS Quote Price',
@@ -90,7 +90,7 @@ export interface VaaSInputs {
     blockType: string;
     blockComplexity: BlockComplexity;
     internalTeamSize: number;
-    monthlyRevenueValue: number;
+    estRtlDelayWeeks: number; // Replaces monthlyRevenueValue
     vaasQuotePrice: number;
     annualBlockCount: number;
 }
@@ -114,12 +114,14 @@ export interface VaaSResult {
     weeksSaved: number;
 
     // Cost Comparison
-    internalTeamCost: number;      // Full duration including idle
+    internalTeamCost: number;      // Full duration INCLUDING delay impact
     vaasCost: number;              // Fixed quote
-    idleCashSaved: number;         // Internal idle time cost avoided
 
-    // Revenue Impact
-    revenueGained: number;         // Weeks saved × weekly revenue
+    // Hard Metrics (New)
+    fteMonthsSaved: number;        // Capacity Dividend
+    costOfRtlDelay: number;        // Burn Rate (Waste)
+    totalCashBurnPrevented: number; // Delay Savings + Efficiency Savings (Idle Tax) [Replaces Revenue Gained]
+    idleCashSaved: number;         // Kept for chart/logic, represents inefficiency of internal flow
 
     // Monthly Breakdown
     monthlyData: VaaSMonthlyData[];
@@ -135,7 +137,7 @@ export function getDefaultVaaSInputs(): VaaSInputs {
         blockType: VAAS_CONSTANTS.BLOCK_TYPES[0],
         blockComplexity: 'medium',
         internalTeamSize: VAAS_INPUT_CONFIGS.internalTeamSize.default,
-        monthlyRevenueValue: VAAS_INPUT_CONFIGS.monthlyRevenueValue.default,
+        estRtlDelayWeeks: VAAS_INPUT_CONFIGS.estRtlDelayWeeks.default,
         vaasQuotePrice: VAAS_INPUT_CONFIGS.vaasQuotePrice.default,
         annualBlockCount: VAAS_INPUT_CONFIGS.annualBlockCount.default,
     };

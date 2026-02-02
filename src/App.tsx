@@ -13,6 +13,8 @@ import { useVaaSEstimator } from './hooks/useVaaSEstimator';
 import { Cpu, Briefcase, BookOpen } from 'lucide-react';
 import { PrintReportBtn } from './components/PrintReportBtn';
 import { UserManualModal } from './components/UserManualModal';
+import { VaaSKPICards } from './components/VaaSKPICards';
+import { VaaSExcelExportBtn } from './components/VaaSExcelExportBtn';
 import { useState } from 'react';
 
 type AppMode = 'roi' | 'vaas';
@@ -83,7 +85,7 @@ function App() {
                                     onClick={() => setMode('roi')}
                                     className={`px-3 py-1.5 text-sm font-medium rounded-md transition-all ${mode === 'roi'
                                         ? 'bg-accent text-white shadow-sm'
-                                        : 'text-slate-400 hover:text-white'
+                                        : 'text-slate-400 hover:text-white hover:bg-slate-700'
                                         }`}
                                 >
                                     <span className="flex items-center gap-1.5">
@@ -95,7 +97,7 @@ function App() {
                                     onClick={() => setMode('vaas')}
                                     className={`px-3 py-1.5 text-sm font-medium rounded-md transition-all ${mode === 'vaas'
                                         ? 'bg-violet-500 text-white shadow-sm'
-                                        : 'text-slate-400 hover:text-white'
+                                        : 'text-slate-400 hover:text-white hover:bg-slate-700'
                                         }`}
                                 >
                                     <span className="flex items-center gap-1.5">
@@ -113,6 +115,9 @@ function App() {
                             </button>
                             {mode === 'roi' && (
                                 <ExcelExportBtn inputs={roiCalc.inputs} result={roiCalc.result} />
+                            )}
+                            {mode === 'vaas' && (
+                                <VaaSExcelExportBtn inputs={vaasCalc.inputs} result={vaasCalc.result} />
                             )}
                         </div>
                     </div>
@@ -154,25 +159,8 @@ function App() {
                             </div>
 
                             {/* Summary Stats */}
-                            <section className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                <div className="bg-slate-800/50 rounded-xl p-4 border border-slate-700/50">
-                                    <div className="text-sm text-slate-400">Months Saved</div>
-                                    <div className="text-2xl font-bold text-violet-400">
-                                        {vaasCalc.result.monthsSaved.toFixed(1)} mo
-                                    </div>
-                                </div>
-                                <div className="bg-slate-800/50 rounded-xl p-4 border border-slate-700/50">
-                                    <div className="text-sm text-slate-400">Revenue Gained</div>
-                                    <div className="text-2xl font-bold text-emerald-400">
-                                        ${(vaasCalc.result.revenueGained / 1000).toFixed(0)}K
-                                    </div>
-                                </div>
-                                <div className="bg-slate-800/50 rounded-xl p-4 border border-slate-700/50">
-                                    <div className="text-sm text-slate-400">Idle Cash Saved</div>
-                                    <div className="text-2xl font-bold text-red-400">
-                                        ${(vaasCalc.result.idleCashSaved / 1000).toFixed(0)}K
-                                    </div>
-                                </div>
+                            <section>
+                                <VaaSKPICards result={vaasCalc.result} />
                             </section>
 
                             {/* Trust Signals Row */}
