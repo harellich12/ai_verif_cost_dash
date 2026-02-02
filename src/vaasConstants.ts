@@ -83,6 +83,15 @@ export const VAAS_INPUT_CONFIGS: Record<string, VaaSInputConfig> = {
         unit: 'blocks/year',
         tooltip: 'Number of similar verification blocks you expect to run annually (for efficiency projection)',
     },
+    hiringLagMonths: {
+        label: 'Internal Hiring Lag',
+        min: 0,
+        max: 6,
+        step: 0.5,
+        default: 1,
+        unit: 'months',
+        tooltip: 'Time required to recruit, hire, and onboard the internal team before productive work begins.',
+    },
 } as const;
 
 // VaaS Inputs Interface
@@ -93,6 +102,10 @@ export interface VaaSInputs {
     estRtlDelayWeeks: number; // Replaces monthlyRevenueValue
     vaasQuotePrice: number;
     annualBlockCount: number;
+    hiringLagMonths: number;
+    isBenchmarkMode?: boolean;
+    benchmarkInternalDays?: number;
+    benchmarkVaasDays?: number;
 }
 
 // Monthly Timeline Data for projections
@@ -129,6 +142,11 @@ export interface VaaSResult {
     // Efficiency Projection
     projectedAnnualEfficiency: number;  // Savings × annual block count
     projectedAnnualTimeSaved: number;   // Months saved × annual block count
+
+    // Benchmark & Advanced Timeline Props (Optional)
+    isBenchmarkMode?: boolean;         // If true, shows "Verified" styling
+    provenSpeedupRatio?: number;       // e.g. 0.82 for 82% speedup
+    internalStartOffset?: number;      // "Hiring Lag" or ramp-up delay in months
 }
 
 // Default Inputs
@@ -140,5 +158,9 @@ export function getDefaultVaaSInputs(): VaaSInputs {
         estRtlDelayWeeks: VAAS_INPUT_CONFIGS.estRtlDelayWeeks.default,
         vaasQuotePrice: VAAS_INPUT_CONFIGS.vaasQuotePrice.default,
         annualBlockCount: VAAS_INPUT_CONFIGS.annualBlockCount.default,
+        hiringLagMonths: VAAS_INPUT_CONFIGS.hiringLagMonths.default,
+        isBenchmarkMode: false,
+        benchmarkInternalDays: 20,
+        benchmarkVaasDays: 5,
     };
 }

@@ -48,8 +48,23 @@ export function useVaaSEstimator(): UseVaaSEstimatorReturn {
 
         // === Timeline Calculation ===
         const traditionalDurationMonths = VAAS_CONSTANTS.BLOCK_DURATIONS[blockComplexity];
-        const vaasDurationMonths = traditionalDurationMonths * VAAS_CONSTANTS.SPEEDUP_FACTOR;
-        const monthsSaved = traditionalDurationMonths - vaasDurationMonths;
+
+        // Benchmark Mode Logic
+        let speedupFactor = VAAS_CONSTANTS.SPEEDUP_FACTOR;
+        let provenSpeedupRatio: number | undefined;
+
+        if (inputs.isBenchmarkMode && inputs.benchmarkInternalDays && inputs.benchmarkVaasDays) {
+            speedupFactor = inputs.benchmarkVaasDays / inputs.benchmarkInternalDays;
+            provenSpeedupRatio = speedupFactor;
+        }
+
+        const vaasDurationMonths = traditionalDurationMonths * speedupFactor;
+
+        // Months Saved needs to account for Hiring Lag (Internal finishes LATER)
+        // Internal Finish = Hiring Lag + Traditional Duration
+        // VaaS Finish = VaaS Duration (starts immediately, no hiring lag assumed for VaaS)
+        const internalTotalDuration = traditionalDurationMonths + (inputs.hiringLagMonths || 0);
+        const monthsSaved = internalTotalDuration - vaasDurationMonths;
         const weeksSaved = monthsSaved * VAAS_CONSTANTS.WEEKS_PER_MONTH;
 
         // === Cost Calculation ===
@@ -78,6 +93,13 @@ export function useVaaSEstimator(): UseVaaSEstimatorReturn {
 
         // 3. Capacity Dividend (Hard Metric)
         // FTE Months Saved = (Traditional Duration - VaaS Duration) * Team Size
+        // NOTE: Does Hiring Lag count as FTE savings? 
+        // Yes, because you don't need the FTEs during that time either (or you are paying for recruiting).
+        // For simplicity, we stick to the execution phase comparison for FTE calculation usually, 
+        // but if we are calculating "Months Saved" based on total timeline, it propagates here.
+        // Let's keep FTE savings based on the execution difference to be conservative, 
+        // or consistent with monthsSaved. 
+        // If we treat monthsSaved as the total time-to-market advantage, then:
         const fteMonthsSaved = monthsSaved * internalTeamSize;
 
         // 4. Total Cash Burn Prevented
@@ -138,6 +160,9 @@ export function useVaaSEstimator(): UseVaaSEstimatorReturn {
             monthlyData,
             projectedAnnualEfficiency,
             projectedAnnualTimeSaved,
+            isBenchmarkMode: inputs.isBenchmarkMode,
+            provenSpeedupRatio,
+            internalStartOffset: inputs.hiringLagMonths,
         };
     }, [inputs]);
 

@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import {
     Layers,
     Users,
@@ -17,7 +16,7 @@ interface VaaSSidebarProps {
 }
 
 export function VaaSSidebar({ inputs, onInputChange, onReset }: VaaSSidebarProps) {
-    const [isTooltipVisible, setIsTooltipVisible] = useState(false);
+
 
     const complexityLabels: Record<BlockComplexity, string> = {
         small: 'Low (4 mo)',
@@ -146,6 +145,45 @@ export function VaaSSidebar({ inputs, onInputChange, onReset }: VaaSSidebarProps
                     </div>
                 </div>
 
+                {/* Hiring Lag Slider */}
+                <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                        <label className="flex items-center gap-2 text-sm text-slate-400">
+                            <Users size={14} />
+                            Internal Hiring Lag
+                            <div className="relative">
+                                <button
+                                    className="text-slate-500 hover:text-violet-400 transition-colors group relative"
+                                >
+                                    <HelpCircle size={14} />
+                                    <div className="absolute left-1/2 -translate-x-1/2 top-full mt-2 w-56 p-3 bg-slate-800 border border-slate-700 rounded-lg shadow-xl z-[100] text-xs text-slate-300 hidden group-hover:block whitespace-normal">
+                                        <strong className="text-violet-400">Recruiting Phase (Zero Output):</strong>
+                                        <p className="mt-1">
+                                            Time required to recruit, hire, and onboard the internal team before productive work begins.
+                                        </p>
+                                    </div>
+                                </button>
+                            </div>
+                        </label>
+                        <span className="text-sm font-medium text-slate-400">
+                            {inputs.hiringLagMonths} months
+                        </span>
+                    </div>
+                    <input
+                        type="range"
+                        min={VAAS_INPUT_CONFIGS.hiringLagMonths.min}
+                        max={VAAS_INPUT_CONFIGS.hiringLagMonths.max}
+                        step={VAAS_INPUT_CONFIGS.hiringLagMonths.step}
+                        value={inputs.hiringLagMonths}
+                        onChange={(e) => onInputChange('hiringLagMonths', Number(e.target.value))}
+                        className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-slate-400"
+                    />
+                    <div className="flex justify-between text-xs text-slate-500">
+                        <span>{VAAS_INPUT_CONFIGS.hiringLagMonths.min}</span>
+                        <span>{VAAS_INPUT_CONFIGS.hiringLagMonths.max}</span>
+                    </div>
+                </div>
+
                 {/* Estimated RTL Delay Slider */}
                 <div className="space-y-2">
                     <div className="flex items-center justify-between">
@@ -154,21 +192,17 @@ export function VaaSSidebar({ inputs, onInputChange, onReset }: VaaSSidebarProps
                             Est. RTL Delay
                             <div className="relative">
                                 <button
-                                    onMouseEnter={() => setIsTooltipVisible(true)}
-                                    onMouseLeave={() => setIsTooltipVisible(false)}
-                                    className="text-slate-500 hover:text-violet-400 transition-colors"
+                                    className="text-slate-500 hover:text-violet-400 transition-colors group relative"
                                 >
                                     <HelpCircle size={14} />
-                                </button>
-                                {isTooltipVisible && (
-                                    <div className="absolute left-0 top-6 w-64 p-3 bg-slate-800 border border-slate-700 rounded-lg shadow-xl z-50 text-xs text-slate-300">
+                                    <div className="absolute left-1/2 -translate-x-1/2 top-full mt-2 w-56 p-3 bg-slate-800 border border-slate-700 rounded-lg shadow-xl z-[100] text-xs text-slate-300 hidden group-hover:block whitespace-normal">
                                         <strong className="text-violet-400">Burn Rate Sensitivity:</strong>
                                         <p className="mt-1">
                                             How many weeks does your team usually wait for RTL drops?
                                             This causes "Wait Waste" (Internal Burn) which VaaS eliminates.
                                         </p>
                                     </div>
-                                )}
+                                </button>
                             </div>
                         </label>
                         <span className="text-sm font-medium text-amber-400">
@@ -237,10 +271,65 @@ export function VaaSSidebar({ inputs, onInputChange, onReset }: VaaSSidebarProps
                         <span>{VAAS_INPUT_CONFIGS.annualBlockCount.max}</span>
                     </div>
                 </div>
-            </div>
+            </div >
 
             {/* Infrastructure Badge (Static) */}
-            <div className="p-4 border-t border-slate-700/50">
+            < div className="p-4 border-t border-slate-700/50 space-y-4" >
+                {/* Benchmark Calibration Toggle */}
+                < div className="bg-slate-800/50 border border-slate-700 rounded-lg p-3" >
+                    <div className="flex items-center justify-between">
+                        <label className="flex items-center gap-2 text-sm font-medium text-slate-200 cursor-pointer">
+                            <input
+                                type="checkbox"
+                                checked={inputs.isBenchmarkMode}
+                                onChange={(e) => onInputChange('isBenchmarkMode', e.target.checked)}
+                                className="w-4 h-4 rounded border-slate-600 text-violet-500 focus:ring-violet-500 bg-slate-700"
+                            />
+                            Benchmark Validator
+                        </label>
+                        {inputs.isBenchmarkMode && (
+                            <span className="text-[10px] bg-amber-500/20 text-amber-300 px-1.5 py-0.5 rounded uppercase font-bold tracking-wider">
+                                Calibrated
+                            </span>
+                        )}
+                    </div>
+
+                    {
+                        inputs.isBenchmarkMode && (
+                            <div className="mt-3 space-y-3 pt-3 border-t border-slate-700/50 animated-fade-in">
+                                <div>
+                                    <label className="text-xs text-slate-400 block mb-1">
+                                        Internal Days (Benchmark)
+                                    </label>
+                                    <input
+                                        type="number"
+                                        min="1"
+                                        value={inputs.benchmarkInternalDays}
+                                        onChange={(e) => onInputChange('benchmarkInternalDays', Number(e.target.value))}
+                                        className="w-full bg-slate-900 border border-slate-700 rounded px-2 py-1.5 text-xs text-slate-200"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="text-xs text-slate-400 block mb-1">
+                                        VaaS Days (Benchmark)
+                                    </label>
+                                    <input
+                                        type="number"
+                                        min="0.5"
+                                        max={inputs.benchmarkInternalDays}
+                                        value={inputs.benchmarkVaasDays}
+                                        onChange={(e) => onInputChange('benchmarkVaasDays', Number(e.target.value))}
+                                        className="w-full bg-slate-900 border border-slate-700 rounded px-2 py-1.5 text-xs text-slate-200"
+                                    />
+                                </div>
+                                <div className="text-[10px] text-slate-500 italic">
+                                    Uses this proven ratio to calibrate estimates.
+                                </div>
+                            </div>
+                        )
+                    }
+                </div >
+
                 <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-3">
                     <div className="flex items-center gap-2 text-slate-400">
                         <Server size={16} className="text-emerald-400" />
@@ -253,7 +342,7 @@ export function VaaSSidebar({ inputs, onInputChange, onReset }: VaaSSidebarProps
                         No H100 GPUs required • Azure OpenAI / AWS Anthropic
                     </div>
                 </div>
-            </div>
-        </aside>
+            </div >
+        </aside >
     );
 }
