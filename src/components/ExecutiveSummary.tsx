@@ -16,7 +16,7 @@ function generateRecommendation(inputs: CalculatorInputs, result: CalculationRes
     body: string;
     suggestions: string[];
 } {
-    const { numGPUs } = inputs;
+    const { numGPUs, computeMode } = inputs;
     const { netSavingsYear, roiPercent, breakEvenMonth } = result;
 
     // Calculate equivalent engineer headcount
@@ -25,7 +25,9 @@ function generateRecommendation(inputs: CalculatorInputs, result: CalculationRes
 
     if (netSavingsYear > 0) {
         // Positive ROI
-        const headline = `Deploying ${numGPUs} GPUs saves ${formatCurrency(netSavingsYear, true)}/year`;
+        const headline = computeMode === 'cloud-api'
+            ? `Cloud API deployment saves ${formatCurrency(netSavingsYear, true)}/year`
+            : `Deploying ${numGPUs} GPUs saves ${formatCurrency(netSavingsYear, true)}/year`;
 
         let body = `This is equivalent to hiring ${equivalentEngineers.toFixed(1)} senior engineers. `;
 
@@ -41,18 +43,22 @@ function generateRecommendation(inputs: CalculatorInputs, result: CalculationRes
 
         const suggestions = [
             `ROI of ${roiPercent.toFixed(0)}% significantly exceeds typical infrastructure investments`,
-            `Consider expanding GPU allocation if utilization remains high`,
             `Document efficiency gains to build case for further AI adoption`,
         ];
+        if (computeMode === 'self-hosted') {
+            suggestions.splice(1, 0, 'Consider expanding GPU allocation if utilization remains high');
+        } else {
+            suggestions.splice(1, 0, 'Monitor token usage and retries to preserve API cost efficiency');
+        }
 
         // V3: Add API vs GPU comparison suggestion
         if (result.isAPIRecommended) {
             suggestions.push(
-                `Consider Cloud API: At ${inputs.interactiveJobsPerDay} interactive jobs/day + ${inputs.regressionRunsPerNight} regressions/night, API costs ${formatCurrency(result.monthlyAPIBill, true)}/mo vs ${formatCurrency(result.monthlyGPUCost, true)}/mo for GPU`
+                `Consider Cloud API: At ${inputs.interactiveJobsPerDay} interactive jobs/day + ${inputs.regressionRunsPerNight} regressions/night, API costs ${formatCurrency(result.monthlyAPIBill, true)}/mo vs ${formatCurrency(result.monthlySelfHostedCost, true)}/mo for GPU`
             );
         } else {
             suggestions.push(
-                `GPU is optimal: At your volume, Self-Hosted saves ${formatCurrency(result.monthlyGPUCost - result.monthlyAPIBill, true)}/mo vs Cloud API`
+                `GPU is optimal: At your volume, Self-Hosted saves ${formatCurrency(result.monthlySelfHostedCost - result.monthlyAPIBill, true)}/mo vs Cloud API`
             );
         }
 
@@ -75,7 +81,7 @@ function generateRecommendation(inputs: CalculatorInputs, result: CalculationRes
         // V3: Add API alternative suggestion when ROI is negative
         if (result.isAPIRecommended) {
             suggestions.unshift(
-                `☁️ Consider Cloud API: Only ${formatCurrency(result.monthlyAPIBill, true)}/mo vs ${formatCurrency(result.monthlyGPUCost, true)}/mo for GPU at your current scale`
+                `☁️ Consider Cloud API: Only ${formatCurrency(result.monthlyAPIBill, true)}/mo vs ${formatCurrency(result.monthlySelfHostedCost, true)}/mo for GPU at your current scale`
             );
         }
 

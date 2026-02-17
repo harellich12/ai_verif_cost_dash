@@ -1,73 +1,156 @@
-# User Manual: GenAI Verification ROI Calculator
+# User Manual: GenAI Verification ROI & VaaS Estimator
 
-## 1. Introduction
-This tool is designed to provide a data-driven answer to the question: *"Should we hire more verification engineers or invest in AI infrastructure?"* It models the complex trade-offs between capital expenditure (GPUs), operational expenditure (Cloud/Salaries), and productivity gains.
+## 1. Purpose
+This tool helps technical and business teams evaluate two paths:
+- **ROI mode**: Build/use AI verification capability internally (self-hosted GPUs or cloud API).
+- **VaaS mode**: Outsource verification to a fixed-price Verification-as-a-Service engagement.
 
----
+Use this model for planning, prioritization, and client discussions. It is not a replacement for formal finance/accounting sign-off.
 
-## 2. The Financial Model
+## 2. App Modes
 
-### Core Assumptions (The "Truth")
-The model is built on fixed industry-standard constants:
-- **H100 GPU Rental**: $3.00 / hour
-- **H100 GPU Purchase**: $30,000 / card + $10,000 chassis overhead per cluster
-- **Engineer Cost**: $200,000 salary + $25,000 EDA license per year
-- **Silicon Respin Cost**: $5,000,000 (Cost of a critical bug escaping to production)
-- **Debug Time**: Engineers spend 50% of their time debugging.
+### ROI mode
+Focus: annual economics of AI-assisted verification.
 
-### How ROI is Calculated
-1. **Cost of AI**:
-   - **Rental**: `GPUs × $3/hr × 730 hrs/month × Utilization %`
-   - **Purchase**: `(GPUs × $30k + $10k) / 36 months` (Amortized over 3 years)
-   - **Hybrid**: Mix of On-Prem (baseload) and Cloud (burst) based on your %.
-   - **Tax Credit**: On-Prem costs can be reduced by 21% via the "Include Tax Depreciation" toggle.
-2. **Value of AI**:
-   - `Engineer Cost/Month × Total Engineers × 50% Debug Time × AI Efficiency Gain %`
-   - *Example*: If 10 engineers cost $1.8M/yr, and AI makes debugging 30% faster, you save the equivalent of hiring ~1.5 more engineers.
-3. **Net Savings**: `Value of AI - Cost of AI`
+### VaaS mode
+Focus: timeline acceleration, capacity impact, and net economic value of VaaS vs internal execution.
 
----
+### Admin vs Presentation (global)
+The header includes a second toggle:
+- **Admin**: full control and configuration visibility.
+- **Presentation**: client-facing view based on your saved filters.
 
-## 3. Input Guide
+Presentation filters are configured from **Presentation Setup** (Admin only) and persisted in local storage.
 
-| Parameter | Recommended Range | Description |
-|-----------|-------------------|-------------|
-| **Verification Engineers** | 5 - 50 | Your current team size. More engineers = more potential time saved by AI. |
-| **Number of H100 GPUs** | 1 - 32 | Number of GPUs dedicated to the inference/training of the agent. |
-| **AI Efficiency Gain** | 10% - 50% | The % of debugging time the AI automates. Conservative estimate: 20-30%. |
-| **GPU Utilization** | 30% - 80% | How efficiently you use the GPUs. 100% is unrealistic; 60% is typical. |
-| **Bug Escape Probability** | 1% - 10% | Likelihood of a critical bug missing verification. |
-| **Bug Reduction with AI** | 20% - 60% | How much the AI improves test coverage, reducing bug risks. |
-| **Deployment Model** | Cloud / On-Prem / Hybrid | **Cloud** (OpEx), **On-Prem** (CapEx), or **Hybrid** (On-Prem baseload + Cloud burst). |
-| **Advanced Settings** | *Collapsed by default* | Fine-tune **Electricity** ($0.12/kWh), **Admin Overhead** (15%), and **Storage** ($500/mo). |
+## 3. Navigation and Controls
+- **Header toggles**:
+  - `ROI / VaaS`
+  - `Admin / Presentation`
+- **Presentation Setup**:
+  - Select which sections are visible in Presentation mode.
+  - Configure visibility for sidebar sections, KPI cards, and charts.
+  - Use **Preview as Client** to switch directly into Presentation mode.
+  - Use **Reset Presentation Filters** to restore defaults.
+- **User Manual button**: opens in-app reference.
+- **Export buttons**: generate PDF and Excel snapshots.
 
----
+## 4. ROI Mode
 
-## 4. Dashboard Features
+### 4.1 Key Inputs
+- **Verification Engineers**: team size impacted by AI assistance.
+- **Compute Mode**:
+  - **Self-Hosted**: infra cost path based on GPUs/deployment assumptions.
+  - **Cloud API**: token-based cost path using jobs/runs/retries.
+- **AI Efficiency Gain (%)**: proportion of debug effort improved by AI.
+- **GPU Utilization (%)**: affects cloud-rental style compute economics.
+- **Bug Escape Probability / Bug Reduction**: risk-value estimation inputs.
+- **Advanced**:
+  - Electricity rate
+  - IT admin overhead
+  - Storage/egress
+  - Depreciation months
 
-### KPI Cards
-- **Net Annual Savings**: The bottom-line impact. Green means the AI pays for itself and saves money.
-- **ROI %**: Return on Investment. `(Savings - Cost) / Cost`.
-- **Break-Even Point**: The month where your cumulative savings finally exceed your cumulative costs.
-- **Risk Reduction**: The "Hidden Value". The dollar value of avoiding a $5M silicon respin.
+Tooltips (`?`) next to sliders explain each assumption.
 
-### Charts
-- **Red Line**: Cumulative Cost (GPU spend).
-- **Green Line**: Cumulative Savings (Productivity gained).
-- **Crossover Point**: Where the Green line crosses above the Red line is your Break-Even point.
+### 4.2 ROI Outputs
+- **Net Annual Savings**
+- **ROI %**
+- **Break-even Month**
+- **Risk Reduction Value**
+- **Compute Path Comparison**:
+  - monthly API vs self-hosted baseline
+  - crossover interactive volume
+  - recommendation signal
+- **Result chart**: cumulative 12-month cash-flow behavior.
+- **Executive summary**: auto-generated narrative for business communication.
 
-### Executive Summary
-The card at the bottom generates a text paragraph suitable for copying into an email or slide deck. It changes tone based on whether the investment is profitable or risky.
+### 4.3 Interpreting ROI Safely
+- A positive ROI is only as reliable as efficiency and workload assumptions.
+- Validate with pilot data where possible (jobs/day, retries, utilization).
+- Treat crossover points as directional unless calibrated from production telemetry.
 
----
+## 5. VaaS Mode
 
-## 5. Export & Sharing
- 
-### PDF Brief
-Click the **"Export PDF"** button (file icon) in the header to generate a "Confidential - Verification ROI Model" report. This single-page breakdown includes a snapshot of your current scenario and KPIs, ideal for email attachments or slide decks.
+### 5.1 Key Inputs
+- **Block Type / Complexity**: baseline internal duration.
+- **Internal Team Size**
+- **Internal Hiring Lag (months)**
+- **Estimated RTL Delay (weeks)**
+  - Modeled as **mutually exclusive** with hiring lag.
+  - If hiring lag > 0, RTL delay cost is not stacked.
+- **VaaS Quote Price**
+- **Annual Block Count**
+- **Parallel Blocks**: adjusts annual calendar time-saved projection.
+- **Market Upside ($/month)**: optional business upside from faster delivery.
+- **Benchmark Validator (optional)**:
+  - Replace default speedup with measured internal vs VaaS benchmark days.
+
+Tooltips (`?`) are available for sliders and key value fields.
+
+### 5.2 VaaS Outputs
+- **Months Saved / Weeks Saved**
+- **Capacity Unlocked (FTE-months)**
+- **Cash Burn Prevented**
+- **Business Upside per Block**
+- **Net Benefit per Block**
+- **Annual projections**:
+  - total efficiency impact
+  - parallelism-adjusted calendar time saved
+  - annual net benefit
+- **Timeline and cost charts** for internal vs VaaS progression.
+
+### 5.3 VaaS Economics Logic (high level)
+- `monthsSaved = (internal duration + hiring lag) - vaas duration`
+- `businessUpsidePerBlock = monthsSaved * marketUpsidePerMonth`
+- `netBenefitPerBlock = (internalTeamCost + idleCashSaved + businessUpsidePerBlock) - vaasQuotePrice`
+- `projectedAnnualNetBenefit = netBenefitPerBlock * annualBlockCount`
+
+Use `Market Upside = 0` for a strictly cost/capacity-only view.
+
+## 6. Exports
+
+### PDF Export
+- Produces a paginated report of current dashboard state.
 
 ### Excel Export
-Clicking **"Export Model (.xlsx)"** generates a sophisticated spreadsheet:
-- **Sheet 1 (Summary)**: Contains the main assumptions and high-level KPIs.
-- **Sheet 2 (Cash Flow)**: A detailed 12-month breakdown.
-- **Features**: All cells use **LINKED FORMULAS**. You can give this Excel file to a Finance partner, and they can change the "Number of Engineers" in cell B6 to see everything update automatically, without needing the web app.
+- **ROI workbook**:
+  - `Parameters`
+  - `Summary`
+  - `Cash Flow`
+- **VaaS workbook**:
+  - quote summary
+  - schedule sheet
+- All exports are **snapshot/value-only** (no live formulas).
+
+## 7. Presentation Mode Workflow
+1. Stay in **Admin** mode.
+2. Open **Presentation Setup**.
+3. Enable only the sections you want clients to see.
+4. Click **Preview as Client**.
+5. Present in **Presentation** mode (remaining controls stay interactive).
+6. Return to **Admin** to adjust filters.
+
+## 8. Calibration Recommendations
+- Run sensitivity scenarios (low/base/high) for critical assumptions.
+- For ROI:
+  - calibrate retries and job volumes from logs.
+  - validate utilization by actual cluster behavior.
+- For VaaS:
+  - calibrate with at least one benchmark project.
+  - keep Market Upside explicit and defensible.
+
+## 9. Troubleshooting
+- If values look unrealistic, verify units (`/day`, `/night`, `%`, `$ / month`).
+- If Presentation mode looks wrong, use **Reset Presentation Filters**.
+- If exports differ from expectation, confirm active mode (ROI vs VaaS) and current inputs.
+- If browser state feels stale, hard refresh and re-open setup.
+
+## 10. Scope and Limits
+- This is a planning estimator, not legal/accounting/GAAP guidance.
+- Outputs depend strongly on assumption quality.
+- Final decisions should combine this model with pilot evidence and finance review.
+
+## 11. Reference Files
+- ROI assumptions and formulas: `src/constants.ts`, `src/hooks/useROICalculator.ts`
+- VaaS assumptions and formulas: `src/vaasConstants.ts`, `src/hooks/useVaaSEstimator.ts`
+- Presentation mode logic: `src/App.tsx`

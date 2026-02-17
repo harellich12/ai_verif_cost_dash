@@ -17,6 +17,9 @@ interface ExcelExportBtnProps {
 export function ExcelExportBtn({ inputs, result }: ExcelExportBtnProps) {
 
     const handleExport = () => {
+        const selectedMonthlyCostLabel = inputs.computeMode === 'cloud-api'
+            ? 'Monthly API Cost (Selected Path)'
+            : 'Monthly GPU/Infra Cost (Selected Path)';
         const wb = XLSX.utils.book_new();
 
         // === Sheet 1: Parameters (Input Assumptions) ===
@@ -169,7 +172,7 @@ export function ExcelExportBtn({ inputs, result }: ExcelExportBtnProps) {
 
         // Monthly Costs
         wsSummary['A17'] = { t: 's', v: '=== MONTHLY COSTS ===' };
-        wsSummary['A18'] = { t: 's', v: 'Monthly GPU/Infra Cost' };
+        wsSummary['A18'] = { t: 's', v: selectedMonthlyCostLabel };
         wsSummary['B18'] = { t: 'n', v: result.monthlyGPUCost };
 
         wsSummary['A19'] = { t: 's', v: 'Monthly Eng. Value Saved' };
@@ -177,11 +180,13 @@ export function ExcelExportBtn({ inputs, result }: ExcelExportBtnProps) {
 
         wsSummary['A20'] = { t: 's', v: 'Monthly OpEx Delta' };
         wsSummary['B20'] = { t: 'n', v: result.opExDelta };
+        wsSummary['A21'] = { t: 's', v: 'Monthly Self-Hosted Baseline' };
+        wsSummary['B21'] = { t: 'n', v: result.monthlySelfHostedCost };
 
         // API Comparison
-        wsSummary['A22'] = { t: 's', v: '=== API vs GPU COMPARISON (V4) ===' };
-        wsSummary['A23'] = { t: 's', v: 'API Cost per File' };
-        wsSummary['B23'] = { t: 'n', v: result.apiCostPerFile };
+        wsSummary['A23'] = { t: 's', v: '=== API vs GPU COMPARISON (V4) ===' };
+        wsSummary['A24'] = { t: 's', v: 'API Cost per File' };
+        wsSummary['B24'] = { t: 'n', v: result.apiCostPerFile };
 
         // Calculate granular costs for export
         const tokenMultiplier = 1 + inputs.avgAgentRetries;
@@ -196,28 +201,28 @@ export function ExcelExportBtn({ inputs, result }: ExcelExportBtnProps) {
         const regressionCost = result.apiCostPerFile * regressionVolume;
         const totalRetryOverhead = retryOverheadPerFile * totalVolume;
 
-        wsSummary['A24'] = { t: 's', v: 'Monthly API Bill' };
-        wsSummary['B24'] = { t: 'n', v: result.monthlyAPIBill };
+        wsSummary['A25'] = { t: 's', v: 'Monthly API Bill' };
+        wsSummary['B25'] = { t: 'n', v: result.monthlyAPIBill };
 
         // Granular Breakdown
-        wsSummary['A25'] = { t: 's', v: '↳ Interactive Cost (OpEx)' };
-        wsSummary['B25'] = { t: 'n', v: interactiveCost };
+        wsSummary['A26'] = { t: 's', v: '↳ Interactive Cost (OpEx)' };
+        wsSummary['B26'] = { t: 'n', v: interactiveCost };
 
-        wsSummary['A26'] = { t: 's', v: '↳ Regression Cost (Infra)' };
-        wsSummary['B26'] = { t: 'n', v: regressionCost };
+        wsSummary['A27'] = { t: 's', v: '↳ Regression Cost (Infra)' };
+        wsSummary['B27'] = { t: 'n', v: regressionCost };
 
-        wsSummary['A27'] = { t: 's', v: '↳ Retry Overhead (Waste)' };
-        wsSummary['B27'] = { t: 'n', v: totalRetryOverhead };
+        wsSummary['A28'] = { t: 's', v: '↳ Retry Overhead (Waste)' };
+        wsSummary['B28'] = { t: 'n', v: totalRetryOverhead };
 
-        wsSummary['A29'] = { t: 's', v: 'Break-Even Volume (Blended)' };
-        wsSummary['B29'] = { t: 'n', v: result.apiVsGPUCrossoverJobsPerDay };
-        wsSummary['C29'] = { t: 's', v: 'jobs/day (assumes current mix)' };
+        wsSummary['A30'] = { t: 's', v: 'Break-Even Volume (Blended)' };
+        wsSummary['B30'] = { t: 'n', v: result.apiVsGPUCrossoverJobsPerDay };
+        wsSummary['C30'] = { t: 's', v: 'jobs/day (assumes current mix)' };
 
-        wsSummary['A30'] = { t: 's', v: 'Recommendation' };
-        wsSummary['B30'] = { t: 's', v: result.isAPIRecommended ? 'Cloud API Recommended' : 'Self-Hosted GPU Recommended' };
+        wsSummary['A31'] = { t: 's', v: 'Recommendation' };
+        wsSummary['B31'] = { t: 's', v: result.isAPIRecommended ? 'Cloud API Recommended' : 'Self-Hosted GPU Recommended' };
 
         wsSummary['!cols'] = [{ wch: 30 }, { wch: 25 }, { wch: 35 }];
-        wsSummary['!ref'] = 'A1:C30';
+        wsSummary['!ref'] = 'A1:C31';
         XLSX.utils.book_append_sheet(wb, wsSummary, 'Summary');
 
         // === Sheet 3: Cash Flow (12-Month Projection) ===
