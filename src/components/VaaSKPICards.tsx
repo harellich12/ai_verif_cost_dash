@@ -6,7 +6,16 @@ interface VaaSKPICardsProps {
 
 export function VaaSKPICards({ result }: VaaSKPICardsProps) {
     return (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+            <div className="bg-slate-800/50 rounded-xl p-4 border border-slate-700/50">
+                <div className="text-sm text-slate-400">Net Benefit / Block</div>
+                <div className={`text-2xl font-bold ${result.netBenefitPerBlock >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                    ${(result.netBenefitPerBlock / 1000).toFixed(0)}K
+                </div>
+                <div className="text-xs text-slate-500 mt-1">
+                    Includes quote + optional business upside
+                </div>
+            </div>
             <div className="bg-slate-800/50 rounded-xl p-4 border border-slate-700/50">
                 <div className="text-sm text-slate-400">Months Saved</div>
                 <div className="text-2xl font-bold text-violet-400">
@@ -32,6 +41,15 @@ export function VaaSKPICards({ result }: VaaSKPICardsProps) {
                 </div>
                 <div className="text-xs text-slate-500 mt-1">
                     Avoided Delay + Idle Waste
+                </div>
+            </div>
+            <div className="bg-slate-800/50 rounded-xl p-4 border border-slate-700/50">
+                <div className="text-sm text-slate-400">Business Upside / Block</div>
+                <div className="text-2xl font-bold text-amber-400">
+                    ${(result.businessUpsidePerBlock / 1000).toFixed(0)}K
+                </div>
+                <div className="text-xs text-slate-500 mt-1">
+                    Time-to-market benefit (optional)
                 </div>
             </div>
         </div>

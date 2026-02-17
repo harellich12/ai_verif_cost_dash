@@ -4,14 +4,16 @@
 
 This tool helps technical leaders decide between **building** their own AI infrastructure (Self-Hosted H100s) or **renting** via simplified APIs (Cloud API).
 
+Use the header toggle to choose:
+- **ROI mode** for infrastructure economics
+- **VaaS mode** for fixed-quote outsourcing comparisons
+
 ### The Core Question
 > *"At what volume of daily verification jobs does it become cheaper to own GPUs rather than pay per token?"*
 
 ---
 
-## 2. Choosing a Compute Mode
-
-The calculator has two distinct modes, selected at the top of the **Control Panel**:
+## 2. Choosing a Compute Mode (ROI mode)
 
 ### Mode A: Self-Hosted GPU ⚡
 Use this when you plan to rent or buy H100 clusters.
@@ -64,6 +66,7 @@ We use a **Snapshot Strategy** for Excel exports to ensure financial integrity.
     *   `↳ Regression Cost (Infra)`
     *   `↳ Retry Overhead (Waste)`
 3.  **Cash Flow Sheet**: 12-month projections.
+4.  Values are exported as a snapshot; editing cells in Excel does not recalculate the model.
 
 ---
 

@@ -83,6 +83,24 @@ export const VAAS_INPUT_CONFIGS: Record<string, VaaSInputConfig> = {
         unit: 'blocks/year',
         tooltip: 'Number of similar verification blocks you expect to run annually (for efficiency projection)',
     },
+    parallelBlocks: {
+        label: 'Parallel Blocks',
+        min: 1,
+        max: 10,
+        step: 1,
+        default: 1,
+        unit: 'blocks',
+        tooltip: 'Average number of verification blocks executed in parallel',
+    },
+    marketUpsidePerMonth: {
+        label: 'Market Upside',
+        min: 0,
+        max: 5_000_000,
+        step: 50_000,
+        default: 0,
+        unit: '$/mo',
+        tooltip: 'Optional business upside from earlier delivery (revenue/profit impact per month)',
+    },
     hiringLagMonths: {
         label: 'Internal Hiring Lag',
         min: 0,
@@ -102,6 +120,8 @@ export interface VaaSInputs {
     estRtlDelayWeeks: number; // Replaces monthlyRevenueValue
     vaasQuotePrice: number;
     annualBlockCount: number;
+    parallelBlocks: number;
+    marketUpsidePerMonth: number;
     hiringLagMonths: number;
     isBenchmarkMode?: boolean;
     benchmarkInternalDays?: number;
@@ -135,6 +155,8 @@ export interface VaaSResult {
     costOfRtlDelay: number;        // Burn Rate (Waste)
     totalCashBurnPrevented: number; // Delay Savings + Efficiency Savings (Idle Tax) [Replaces Revenue Gained]
     idleCashSaved: number;         // Kept for chart/logic, represents inefficiency of internal flow
+    businessUpsidePerBlock: number; // Optional upside from faster time to market
+    netBenefitPerBlock: number;     // Internal comparable cost + upside - VaaS quote
 
     // Monthly Breakdown
     monthlyData: VaaSMonthlyData[];
@@ -142,6 +164,7 @@ export interface VaaSResult {
     // Efficiency Projection
     projectedAnnualEfficiency: number;  // Savings × annual block count
     projectedAnnualTimeSaved: number;   // Months saved × annual block count
+    projectedAnnualNetBenefit: number;  // Net benefit × annual block count
 
     // Benchmark & Advanced Timeline Props (Optional)
     isBenchmarkMode?: boolean;         // If true, shows "Verified" styling
@@ -158,6 +181,8 @@ export function getDefaultVaaSInputs(): VaaSInputs {
         estRtlDelayWeeks: VAAS_INPUT_CONFIGS.estRtlDelayWeeks.default,
         vaasQuotePrice: VAAS_INPUT_CONFIGS.vaasQuotePrice.default,
         annualBlockCount: VAAS_INPUT_CONFIGS.annualBlockCount.default,
+        parallelBlocks: VAAS_INPUT_CONFIGS.parallelBlocks.default,
+        marketUpsidePerMonth: VAAS_INPUT_CONFIGS.marketUpsidePerMonth.default,
         hiringLagMonths: VAAS_INPUT_CONFIGS.hiringLagMonths.default,
         isBenchmarkMode: false,
         benchmarkInternalDays: 20,

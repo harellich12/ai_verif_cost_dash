@@ -2,7 +2,7 @@
 
 A sophisticated financial modeling tool designed to help CTOs and Engineering Managers evaluate the return on investment (ROI) of deploying AI coding agents versus traditional hiring for hardware verification tasks.
 
-![Dashboard Preview](./screenshot.png) *(Note: Add a screenshot here if available)*
+Dashboard preview image can be added at `./screenshot.png`.
 
 ## 🚀 Features
 
@@ -51,25 +51,27 @@ A sophisticated financial modeling tool designed to help CTOs and Engineering Ma
 
 ## 📖 Usage Guide
 
-### 1. Configure Inputs (Left Sidebar)
-- **Compute Mode**: Choose **Self-Hosted** (GPU) or **Cloud API**.
-    - If **Cloud API**: Configure `Interactive Jobs/Day`, `Regression Runs/Night`, and `Avg. Retries`.
-    - If **Self-Hosted**: Configure `Number of GPUs` and `Depreciation Period`.
-- **Resources**: Set the number of verification engineers.
-- **Performance**: Adjust "AI Efficiency Gain" and "Bug Reduction Probability".
-- **Advanced Settings**: (Collapsed by default)
-    - Customize **Electricity Rate**, **Admin Overhead**, and **Storage/Egress**.
-    - Adjust **Hardware Depreciation** (default 24 months).
+### 1. Select App Mode (Header Toggle)
+- **ROI**: GenAI verification investment analysis.
+- **VaaS**: Verification-as-a-Service quote and timeline estimator.
 
-### 2. Analyze Results
+### 2. Configure Inputs (Left Sidebar)
+- **Compute Mode (ROI)**: Choose **Self-Hosted** (GPU) or **Cloud API**.
+    - If **Cloud API**: Configure `Interactive Jobs/Day`, `Regression Runs/Night`, and `Avg. Agent Retries`.
+    - If **Self-Hosted**: Configure `Number of GPUs`, deployment strategy, and depreciation assumptions.
+- **Resources**: Set verification engineers.
+- **Performance/Risk**: Adjust AI efficiency and bug-risk reduction assumptions.
+- **Advanced Settings**: Tune electricity, admin overhead, storage/egress, and depreciation months.
+
+### 3. Analyze Results
 - **KPI Cards**: Review Net Savings, ROI %, Break-Even Month, and Risk Reduction Value.
 - **Charts**: Visualize the "Cumulative Savings" vs. "Cumulative Cost" crossover.
-- **API Comparison**: In Cloud API mode, see the **Break-Even Volume** where GPU becomes cheaper.
+- **API Comparison**: In Cloud API mode, see the **Break-Even Volume** where self-hosted GPUs become cheaper.
 - **Executive Summary**: Read the strategic recommendation (e.g., "Switch to Self-Hosted if volume > 850 jobs/day").
 
-### 3. Share & Export
+### 4. Share & Export
 - **Export PDF**: Click the file icon in the header for a professional "Confidential" brief.
-- **Export Excel**: Download the full editable model for finance reviews.
+- **Export Excel**: Download a snapshot `.xlsx` export (values only, no formulas) for audit-safe sharing.
 
 ## 📄 License
 Private Property - IESE Business School / Project Owner.

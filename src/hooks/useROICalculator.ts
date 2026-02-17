@@ -1,5 +1,12 @@
 import { useState, useMemo, useCallback } from 'react';
-import { CONSTANTS, CalculatorInputs, CalculationResult, MonthlyData, getDefaultInputs } from '../constants';
+import {
+    CONSTANTS,
+    INPUT_CONFIGS,
+    CalculatorInputs,
+    CalculationResult,
+    MonthlyData,
+    getDefaultInputs,
+} from '../constants';
 
 // Summary metrics for easy access
 interface SummaryMetrics {
@@ -37,7 +44,17 @@ export function useROICalculator(): UseROICalculatorReturn {
         key: K,
         value: CalculatorInputs[K]
     ) => {
-        setInputs(prev => ({ ...prev, [key]: value }));
+        setInputs(prev => {
+            if (typeof value === 'number') {
+                let nextValue = Number.isFinite(value) ? value : (prev[key] as number);
+                const config = INPUT_CONFIGS[key as string];
+                if (config) {
+                    nextValue = Math.min(config.max, Math.max(config.min, nextValue));
+                }
+                return { ...prev, [key]: nextValue as CalculatorInputs[K] };
+            }
+            return { ...prev, [key]: value };
+        });
     }, []);
 
     const resetInputs = useCallback(() => {
@@ -59,6 +76,7 @@ export function useROICalculator(): UseROICalculatorReturn {
             electricityRate,
             adminOverhead,
             storageCost,
+            computeMode,
             // V4: API inputs
             interactiveJobsPerDay,
             regressionRunsPerNight,
@@ -117,17 +135,8 @@ export function useROICalculator(): UseROICalculatorReturn {
         // Admin overhead applies to the aggregate of GPU + Storage costs
         const monthlyAdminCost = (baseMonthlyGPUCost + monthlyStorageCost) * (adminOverhead / 100);
 
-        // Final Total Monthly Cost
-        const monthlyTotalCost = baseMonthlyGPUCost + monthlyStorageCost + monthlyAdminCost;
-
-        // For compatibility, we map this to 'monthlyGPUCost' in the result, 
-        // effectively treating it as "Total Infrastructure Cost"
-        const monthlyGPUCost = monthlyTotalCost;
-
-        // === Upfront Cost (for break-even calculation) ===
-        const upfrontCost = onPremGPUs > 0
-            ? (onPremGPUs * CONSTANTS.H100_GPU_PURCHASE) + CONSTANTS.H100_CHASSIS_OVERHEAD
-            : 0;
+        // Final monthly self-hosted cost path.
+        const monthlySelfHostedCost = baseMonthlyGPUCost + monthlyStorageCost + monthlyAdminCost;
 
         // === Engineering Value per Engineer per Month ===
         const engineerMonthlyCost = (CONSTANTS.ENGINEER_SALARY_YEARLY + CONSTANTS.EDA_LICENSE_YEARLY)
@@ -142,55 +151,6 @@ export function useROICalculator(): UseROICalculatorReturn {
 
         // Effective cost with AI
         const monthlyEngineerCostWithAI = monthlyEngineerCostBaseline - monthlyEngineerValueSaved;
-
-        // === OpEx Delta ===
-        const opExDelta = monthlyGPUCost - monthlyEngineerValueSaved;
-
-        // === 12-Month Cash Flow Breakdown ===
-        const monthlyData: MonthlyData[] = [];
-        let cumulativeSavings = 0;
-        let cumulativeGPUCost = upfrontCost;
-
-        for (let month = 1; month <= 12; month++) {
-            const netSavings = monthlyEngineerValueSaved - monthlyGPUCost;
-            cumulativeSavings += netSavings;
-            cumulativeGPUCost += monthlyGPUCost;
-
-            monthlyData.push({
-                month,
-                gpuCost: monthlyGPUCost,
-                engineerCostBaseline: monthlyEngineerCostBaseline,
-                engineerCostWithAI: monthlyEngineerCostWithAI,
-                netSavings,
-                cumulativeSavings,
-                cumulativeGPUCost,
-            });
-        }
-
-        // === Break-Even Point ===
-        let breakEvenMonth: number | null = null;
-        const initialInvestment = upfrontCost;
-        let runningTotal = -initialInvestment;
-
-        for (let i = 0; i < monthlyData.length; i++) {
-            runningTotal += monthlyData[i].netSavings;
-            if (runningTotal >= 0 && breakEvenMonth === null) {
-                breakEvenMonth = i + 1;
-                break;
-            }
-        }
-
-        // === Total Annual Values ===
-        const totalGPUCost = (monthlyGPUCost * 12) + upfrontCost;
-        const totalEngineerSavings = monthlyEngineerValueSaved * 12;
-        const netSavingsYear = totalEngineerSavings - totalGPUCost;
-        const roiPercent = totalGPUCost > 0 ? ((totalEngineerSavings - totalGPUCost) / totalGPUCost) * 100 : 0;
-
-        // === Risk-Adjusted Values ===
-        const baselineRiskValue = bugProbDecimal * CONSTANTS.SILICON_RESPIN_COST;
-        const reducedBugProb = bugProbDecimal * (1 - bugReductionDecimal);
-        const riskValueWithAI = reducedBugProb * CONSTANTS.SILICON_RESPIN_COST;
-        const riskReduction = baselineRiskValue - riskValueWithAI;
 
         // === V4: API Cost Calculations (Updated with Retry Multiplier & Split Volume) ===
         // Token multiplier: base tokens × (1 + retries)
@@ -213,18 +173,79 @@ export function useROICalculator(): UseROICalculatorReturn {
         // Monthly API Bill = Cost_Per_File × Total_Monthly_Jobs
         const monthlyAPIBill = apiCostPerFile * totalMonthlyJobs;
 
+        // Primary cost path selected by compute mode.
+        const monthlySelectedCost = computeMode === 'cloud-api'
+            ? monthlyAPIBill
+            : monthlySelfHostedCost;
+
+        // Legacy field name retained for compatibility with existing UI.
+        const monthlyGPUCost = monthlySelectedCost;
+
+        // === OpEx Delta ===
+        const opExDelta = monthlySelectedCost - monthlyEngineerValueSaved;
+
+        // === 12-Month Cash Flow Breakdown ===
+        const monthlyData: MonthlyData[] = [];
+        let cumulativeSavings = 0;
+        let cumulativeGPUCost = 0;
+
+        for (let month = 1; month <= 12; month++) {
+            const netSavings = monthlyEngineerValueSaved - monthlySelectedCost;
+            cumulativeSavings += netSavings;
+            cumulativeGPUCost += monthlySelectedCost;
+
+            monthlyData.push({
+                month,
+                gpuCost: monthlySelectedCost,
+                engineerCostBaseline: monthlyEngineerCostBaseline,
+                engineerCostWithAI: monthlyEngineerCostWithAI,
+                netSavings,
+                cumulativeSavings,
+                cumulativeGPUCost,
+            });
+        }
+
+        // === Break-Even Point ===
+        let breakEvenMonth: number | null = null;
+        let runningTotal = 0;
+
+        for (let i = 0; i < monthlyData.length; i++) {
+            runningTotal += monthlyData[i].netSavings;
+            if (runningTotal >= 0 && breakEvenMonth === null) {
+                breakEvenMonth = i + 1;
+                break;
+            }
+        }
+
+        // === Total Annual Values ===
+        const totalGPUCost = monthlySelectedCost * 12;
+        const totalEngineerSavings = monthlyEngineerValueSaved * 12;
+        const netSavingsYear = totalEngineerSavings - totalGPUCost;
+        const roiPercent = totalGPUCost > 0 ? ((totalEngineerSavings - totalGPUCost) / totalGPUCost) * 100 : 0;
+
+        // === Risk-Adjusted Values ===
+        const baselineRiskValue = bugProbDecimal * CONSTANTS.SILICON_RESPIN_COST;
+        const reducedBugProb = bugProbDecimal * (1 - bugReductionDecimal);
+        const riskValueWithAI = reducedBugProb * CONSTANTS.SILICON_RESPIN_COST;
+        const riskReduction = baselineRiskValue - riskValueWithAI;
+
         // Crossover Analysis: Interactive Jobs/day threshold
-        // Solve: apiCostPerFile × (InteractiveVol + RegressionVol) = monthlyGPUCost
-        // InteractiveVol = (monthlyGPUCost / apiCostPerFile) - RegressionVol
-        const maxApiVolumeForBreakEven = monthlyGPUCost / apiCostPerFile;
+        // Solve: apiCostPerFile × (InteractiveVol + RegressionVol) = monthlySelfHostedCost
+        // InteractiveVol = (monthlySelfHostedCost / apiCostPerFile) - RegressionVol
+        const maxApiVolumeForBreakEven = apiCostPerFile > 0
+            ? monthlySelfHostedCost / apiCostPerFile
+            : Number.POSITIVE_INFINITY;
         const breakEvenInteractiveVolume = maxApiVolumeForBreakEven - regressionVolume;
 
         // Convert volume back to Jobs/Day per Engineer (divide by: Engineers * 20 days)
         // If result is negative, it means regressions alone already cost more than GPU.
-        const apiVsGPUCrossoverJobsPerDay = breakEvenInteractiveVolume / (numEngineers * CONSTANTS.WORKING_DAYS_PER_MONTH);
+        const interactiveDenominator = numEngineers * CONSTANTS.WORKING_DAYS_PER_MONTH;
+        const apiVsGPUCrossoverJobsPerDay = interactiveDenominator > 0
+            ? breakEvenInteractiveVolume / interactiveDenominator
+            : 0;
 
-        // Recommendation: API is cheaper if monthlyAPIBill < monthlyGPUCost
-        const isAPIRecommended = monthlyAPIBill < monthlyGPUCost;
+        // Recommendation: API is cheaper if monthlyAPIBill < monthly self-hosted path.
+        const isAPIRecommended = monthlyAPIBill < monthlySelfHostedCost;
 
         return {
             monthlyData,
@@ -237,6 +258,7 @@ export function useROICalculator(): UseROICalculatorReturn {
             riskValueWithAI,
             riskReduction,
             monthlyGPUCost,
+            monthlySelfHostedCost,
             monthlyEngineerValueSaved,
             opExDelta,
             // V3: API cost comparison

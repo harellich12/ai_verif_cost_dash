@@ -1,14 +1,16 @@
-import { CalculationResult } from '../constants';
+import { CalculationResult, CalculatorInputs } from '../constants';
 import { formatCurrency, formatPercent } from '../utils/format';
 import { TrendingUp, TrendingDown, Target, ShieldCheck, DollarSign, Calendar, ArrowLeftRight } from 'lucide-react';
 
 interface KPICardsProps {
     result: CalculationResult;
+    inputs: CalculatorInputs;
 }
 
-export function KPICards({ result }: KPICardsProps) {
+export function KPICards({ result, inputs }: KPICardsProps) {
     const isPositiveROI = result.netSavingsYear > 0;
     const hasBreakEven = result.breakEvenMonth !== null;
+    const selectedCostLabel = inputs.computeMode === 'cloud-api' ? 'API Cost' : 'GPU Cost';
 
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -97,7 +99,7 @@ export function KPICards({ result }: KPICardsProps) {
                             <div className="text-lg font-semibold text-slate-300">
                                 {formatCurrency(result.monthlyGPUCost, true)}
                             </div>
-                            <div className="text-xs text-slate-500">GPU Cost</div>
+                            <div className="text-xs text-slate-500">{selectedCostLabel}</div>
                         </div>
                         <div>
                             <div className="text-lg font-semibold text-success">
@@ -128,7 +130,7 @@ export function KPICards({ result }: KPICardsProps) {
                             <div className="text-lg font-semibold text-slate-300">
                                 {formatCurrency(result.totalGPUCost, true)}
                             </div>
-                            <div className="text-xs text-slate-500">Total GPU Investment</div>
+                            <div className="text-xs text-slate-500">Total AI Compute Cost</div>
                         </div>
                         <div>
                             <div className="text-lg font-semibold text-success">
@@ -165,9 +167,9 @@ export function KPICards({ result }: KPICardsProps) {
                         </div>
                         <div>
                             <div className="text-lg font-semibold text-slate-300">
-                                {formatCurrency(result.monthlyGPUCost, true)}
+                                {formatCurrency(result.monthlySelfHostedCost, true)}
                             </div>
-                            <div className="text-xs text-slate-500">Monthly GPU Cost</div>
+                            <div className="text-xs text-slate-500">Monthly Self-Hosted Cost</div>
                         </div>
                         <div>
                             <div className="text-lg font-semibold text-amber-400">
@@ -179,7 +181,7 @@ export function KPICards({ result }: KPICardsProps) {
                         </div>
                         <div>
                             <div className={`text-lg font-semibold ${result.isAPIRecommended ? 'text-violet-400' : 'text-emerald-400'}`}>
-                                {formatCurrency(Math.abs(result.monthlyAPIBill - result.monthlyGPUCost), true)}/mo
+                                {formatCurrency(Math.abs(result.monthlyAPIBill - result.monthlySelfHostedCost), true)}/mo
                             </div>
                             <div className="text-xs text-slate-500">
                                 {result.isAPIRecommended ? 'API saves' : 'GPU saves'}
@@ -190,8 +192,8 @@ export function KPICards({ result }: KPICardsProps) {
                         {result.isAPIRecommended
                             ? `Start with Cloud API. It's cheaper until you exceed ${result.apiVsGPUCrossoverJobsPerDay.toFixed(1)} interactive jobs/day per engineer.`
                             : result.apiVsGPUCrossoverJobsPerDay < 0
-                                ? `Switch to Self-Hosted GPU. Your regression volume alone costs more than the GPU rental.`
-                                : `Switch to Self-Hosted GPU. At your volume, you're saving ${formatCurrency(result.monthlyGPUCost - result.monthlyAPIBill, true)}/mo vs API.`
+                                ? `Switch to Self-Hosted GPU. Your regression volume alone costs more than the self-hosted baseline.`
+                                : `Switch to Self-Hosted GPU. At your volume, you're saving ${formatCurrency(result.monthlySelfHostedCost - result.monthlyAPIBill, true)}/mo vs API.`
                         }
                     </div>
                 </div>

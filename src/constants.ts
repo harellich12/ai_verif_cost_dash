@@ -237,7 +237,8 @@ export interface CalculationResult {
     riskReduction: number;
 
     // OpEx comparison
-    monthlyGPUCost: number;
+    monthlyGPUCost: number; // Selected compute path monthly cost (legacy field name)
+    monthlySelfHostedCost: number; // Self-hosted monthly infra cost for API-vs-GPU comparison
     monthlyEngineerValueSaved: number;
     opExDelta: number;
 

@@ -1,14 +1,22 @@
 import { useState } from 'react';
 import { CalculatorInputs, INPUT_CONFIGS, getDefaultInputs, CONSTANTS } from '../constants';
-import { RotateCcw, Cpu, Users, Zap, Activity, Bug, Shield, Cloud, Server, Combine, ChevronDown, ChevronUp, Settings, Globe, Briefcase } from 'lucide-react';
+import { RotateCcw, Cpu, Users, Zap, Activity, Bug, Shield, Cloud, Server, Combine, ChevronDown, ChevronUp, Settings, Globe, Briefcase, HelpCircle } from 'lucide-react';
 
 interface ControlsSidebarProps {
     inputs: CalculatorInputs;
     onInputChange: <K extends keyof CalculatorInputs>(key: K, value: CalculatorInputs[K]) => void;
     onReset: () => void;
+    sectionVisibility?: {
+        computeMode?: boolean;
+        resources?: boolean;
+        performance?: boolean;
+        risk?: boolean;
+        deployment?: boolean;
+        advanced?: boolean;
+    };
 }
 
-export function ControlsSidebar({ inputs, onInputChange, onReset }: ControlsSidebarProps) {
+export function ControlsSidebar({ inputs, onInputChange, onReset, sectionVisibility }: ControlsSidebarProps) {
     const [showAdvanced, setShowAdvanced] = useState(false);
 
     const handleSliderChange = (key: keyof CalculatorInputs, value: string) => {
@@ -46,7 +54,8 @@ export function ControlsSidebar({ inputs, onInputChange, onReset }: ControlsSide
             <div className="flex-1 overflow-y-auto p-4 space-y-1">
 
                 {/* V3: Compute Mode Section */}
-                <ControlSection title="Compute Mode" icon={<Cpu size={14} />}>
+                {sectionVisibility?.computeMode !== false && (
+                    <ControlSection title="Compute Mode" icon={<Cpu size={14} />}>
                     <div className="bg-slate-800/50 rounded-lg p-3">
                         <div className="flex items-center justify-between mb-3">
                             <span className="text-xs text-slate-400 uppercase tracking-wide">AI Processing Path</span>
@@ -76,10 +85,12 @@ export function ControlsSidebar({ inputs, onInputChange, onReset }: ControlsSide
                             )}
                         </div>
                     </div>
-                </ControlSection>
+                    </ControlSection>
+                )}
 
                 {/* Resources Section */}
-                <ControlSection title="Resources" icon={<Users size={14} />}>
+                {sectionVisibility?.resources !== false && (
+                    <ControlSection title="Resources" icon={<Users size={14} />}>
                     <ControlSlider
                         icon={<Users size={14} className="text-cyan-400" />}
                         label="Verification Engineers"
@@ -155,10 +166,12 @@ export function ControlsSidebar({ inputs, onInputChange, onReset }: ControlsSide
                             </div>
                         </>
                     )}
-                </ControlSection>
+                    </ControlSection>
+                )}
 
                 {/* Performance Section */}
-                <ControlSection title="Performance" icon={<Zap size={14} />}>
+                {sectionVisibility?.performance !== false && (
+                    <ControlSection title="Performance" icon={<Zap size={14} />}>
                     <ControlSlider
                         icon={<Zap size={14} className="text-yellow-400" />}
                         label="AI Efficiency Gain"
@@ -179,10 +192,12 @@ export function ControlsSidebar({ inputs, onInputChange, onReset }: ControlsSide
                             accentColor="purple"
                         />
                     )}
-                </ControlSection>
+                    </ControlSection>
+                )}
 
                 {/* Risk Analysis Section */}
-                <ControlSection title="Risk Analysis" icon={<Shield size={14} />}>
+                {sectionVisibility?.risk !== false && (
+                    <ControlSection title="Risk Analysis" icon={<Shield size={14} />}>
                     <ControlSlider
                         icon={<Bug size={14} className="text-red-400" />}
                         label="Bug Escape Probability"
@@ -201,10 +216,11 @@ export function ControlsSidebar({ inputs, onInputChange, onReset }: ControlsSide
                         isDefault={inputs.bugReductionWithAI === defaults.bugReductionWithAI}
                         accentColor="emerald"
                     />
-                </ControlSection>
+                    </ControlSection>
+                )}
 
                 {/* Deployment Strategy Section - V2 (Only for self-hosted mode) */}
-                {inputs.computeMode === 'self-hosted' && (
+                {sectionVisibility?.deployment !== false && inputs.computeMode === 'self-hosted' && (
                     <ControlSection title="Deployment Strategy" icon={<Cloud size={14} />}>
                         <div className="bg-slate-800/50 rounded-lg p-3">
                             <div className="flex items-center justify-between mb-3">
@@ -284,7 +300,8 @@ export function ControlsSidebar({ inputs, onInputChange, onReset }: ControlsSide
                 )}
 
                 {/* Advanced Settings */}
-                <div className="border border-slate-700/50 rounded-xl overflow-hidden bg-slate-800/20">
+                {sectionVisibility?.advanced !== false && (
+                    <div className="border border-slate-700/50 rounded-xl overflow-hidden bg-slate-800/20">
                     <button
                         onClick={() => setShowAdvanced(!showAdvanced)}
                         className="w-full px-4 py-3 flex items-center justify-between hover:bg-slate-800/50 transition-colors"
@@ -339,7 +356,8 @@ export function ControlsSidebar({ inputs, onInputChange, onReset }: ControlsSide
                             />
                         </div>
                     )}
-                </div>
+                    </div>
+                )}
             </div>
 
             {/* Footer */}
@@ -379,21 +397,45 @@ interface ControlSliderProps {
     icon: React.ReactNode;
     label: string;
     value: number;
-    config: { min: number; max: number; step: number; unit: string };
+    config: { min: number; max: number; step: number; unit: string; tooltip?: string };
     onChange: (value: string) => void;
     isDefault: boolean;
     accentColor: 'cyan' | 'green' | 'yellow' | 'purple' | 'red' | 'emerald' | 'blue' | 'orange';
 }
 
 const colorMap = {
-    cyan: { bg: 'bg-cyan-500', text: 'text-cyan-400', ring: 'ring-cyan-500/30' },
-    green: { bg: 'bg-green-500', text: 'text-green-400', ring: 'ring-green-500/30' },
-    yellow: { bg: 'bg-yellow-500', text: 'text-yellow-400', ring: 'ring-yellow-500/30' },
-    purple: { bg: 'bg-purple-500', text: 'text-purple-400', ring: 'ring-purple-500/30' },
-    red: { bg: 'bg-red-500', text: 'text-red-400', ring: 'ring-red-500/30' },
-    emerald: { bg: 'bg-emerald-500', text: 'text-emerald-400', ring: 'ring-emerald-500/30' },
-    blue: { bg: 'bg-blue-500', text: 'text-blue-400', ring: 'ring-blue-500/30' },
-    orange: { bg: 'bg-orange-500', text: 'text-orange-400', ring: 'ring-orange-500/30' },
+    cyan: {
+        bg: 'bg-cyan-500',
+        activeInput: 'bg-slate-900/80 border-cyan-500/50 text-cyan-400 ring-1 ring-cyan-500/30 focus:ring-cyan-500/30',
+    },
+    green: {
+        bg: 'bg-green-500',
+        activeInput: 'bg-slate-900/80 border-green-500/50 text-green-400 ring-1 ring-green-500/30 focus:ring-green-500/30',
+    },
+    yellow: {
+        bg: 'bg-yellow-500',
+        activeInput: 'bg-slate-900/80 border-yellow-500/50 text-yellow-400 ring-1 ring-yellow-500/30 focus:ring-yellow-500/30',
+    },
+    purple: {
+        bg: 'bg-purple-500',
+        activeInput: 'bg-slate-900/80 border-purple-500/50 text-purple-400 ring-1 ring-purple-500/30 focus:ring-purple-500/30',
+    },
+    red: {
+        bg: 'bg-red-500',
+        activeInput: 'bg-slate-900/80 border-red-500/50 text-red-400 ring-1 ring-red-500/30 focus:ring-red-500/30',
+    },
+    emerald: {
+        bg: 'bg-emerald-500',
+        activeInput: 'bg-slate-900/80 border-emerald-500/50 text-emerald-400 ring-1 ring-emerald-500/30 focus:ring-emerald-500/30',
+    },
+    blue: {
+        bg: 'bg-blue-500',
+        activeInput: 'bg-slate-900/80 border-blue-500/50 text-blue-400 ring-1 ring-blue-500/30 focus:ring-blue-500/30',
+    },
+    orange: {
+        bg: 'bg-orange-500',
+        activeInput: 'bg-slate-900/80 border-orange-500/50 text-orange-400 ring-1 ring-orange-500/30 focus:ring-orange-500/30',
+    },
 };
 
 function ControlSlider({ icon, label, value, config, onChange, isDefault, accentColor }: ControlSliderProps) {
@@ -406,6 +448,14 @@ function ControlSlider({ icon, label, value, config, onChange, isDefault, accent
                 <div className="flex items-center gap-2">
                     {icon}
                     <span className="text-xs text-slate-300">{label}</span>
+                    {config.tooltip && (
+                        <div className="relative group">
+                            <HelpCircle size={12} className="text-slate-500 group-hover:text-slate-300 transition-colors" />
+                            <div className="absolute left-1/2 -translate-x-1/2 top-full mt-2 w-56 p-2.5 bg-slate-900 border border-slate-700 rounded-lg shadow-xl z-[100] text-[11px] text-slate-300 hidden group-hover:block whitespace-normal">
+                                {config.tooltip}
+                            </div>
+                        </div>
+                    )}
                 </div>
                 <div className="flex items-center gap-1">
                     <input
@@ -418,9 +468,8 @@ function ControlSlider({ icon, label, value, config, onChange, isDefault, accent
                         className={`w-12 px-1 py-0.5 text-xs font-mono text-right border rounded focus:outline-none focus:ring-1 transition-all
                             ${isDefault
                                 ? 'bg-slate-900/50 border-slate-700 text-slate-400'
-                                : `bg-slate-900/80 border-${colors.text.split('-')[1]}-500/50 ${colors.text} ring-1 ${colors.ring}`
+                                : colors.activeInput
                             }
-                            focus:${colors.ring.replace('ring-', 'focus:ring-')}
                         `}
                     />
                     <span className="text-xs text-slate-500 w-4">{config.unit === '%' ? '%' : ''}</span>

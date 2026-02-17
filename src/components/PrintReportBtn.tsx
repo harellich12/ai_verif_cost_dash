@@ -14,13 +14,15 @@ export function PrintReportBtn() {
 
         try {
             // 1. Capture the DOM
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const canvas = await (html2canvas as any)(element, {
-                scale: 2, // High resolution
-                useCORS: true,
-                logging: false,
-                backgroundColor: '#0f172a', // Ensure background matches dark theme
-            });
+            const canvas = await html2canvas(
+                element,
+                {
+                    scale: 2, // High resolution
+                    useCORS: true,
+                    logging: false,
+                    backgroundColor: '#0f172a', // Ensure background matches dark theme
+                } as unknown as Parameters<typeof html2canvas>[1]
+            );
 
             // 2. Initialize PDF
             const imgData = canvas.toDataURL('image/png');
@@ -31,25 +33,42 @@ export function PrintReportBtn() {
             });
 
             const pdfWidth = pdf.internal.pageSize.getWidth();
+            const pdfHeight = pdf.internal.pageSize.getHeight();
 
-            // 3. Add Header
-            pdf.setFillColor(15, 23, 42); // Dark background
-            pdf.rect(0, 0, pdfWidth, 20, 'F'); // Header bar
+            // 3. Add paginated Dashboard Image
+            const headerHeight = 20;
+            const imageTop = 25;
+            const bottomMargin = 10;
+            const usableImageHeight = pdfHeight - imageTop - bottomMargin;
 
-            pdf.setTextColor(255, 255, 255);
-            pdf.setFontSize(14);
-            pdf.text('Confidential - Verification ROI Model', 10, 12);
-
-            pdf.setFontSize(10);
-            pdf.setTextColor(148, 163, 184); // Slate-400
-            pdf.text(`Generated: ${new Date().toLocaleString()}`, pdfWidth - 10, 12, { align: 'right' });
-
-            // 4. Add Dashboard Image
             const imgRatio = canvas.width / canvas.height;
             const imgHeight = pdfWidth / imgRatio;
 
-            // Place image below header (y=25)
-            pdf.addImage(imgData, 'PNG', 0, 25, pdfWidth, imgHeight);
+            const drawHeader = (pageNumber: number) => {
+                pdf.setFillColor(15, 23, 42);
+                pdf.rect(0, 0, pdfWidth, headerHeight, 'F');
+
+                pdf.setTextColor(255, 255, 255);
+                pdf.setFontSize(14);
+                pdf.text('Confidential - Verification ROI Model', 10, 12);
+
+                pdf.setFontSize(10);
+                pdf.setTextColor(148, 163, 184);
+                pdf.text(`Generated: ${new Date().toLocaleString()}`, pdfWidth - 10, 12, { align: 'right' });
+                pdf.text(`Page ${pageNumber}`, pdfWidth - 10, 17, { align: 'right' });
+            };
+
+            let renderedHeight = 0;
+            let pageNumber = 1;
+            while (renderedHeight < imgHeight) {
+                if (pageNumber > 1) {
+                    pdf.addPage();
+                }
+                drawHeader(pageNumber);
+                pdf.addImage(imgData, 'PNG', 0, imageTop - renderedHeight, pdfWidth, imgHeight);
+                renderedHeight += usableImageHeight;
+                pageNumber += 1;
+            }
 
             // 5. Save
             pdf.save('Verification_Strategy_Brief.pdf');

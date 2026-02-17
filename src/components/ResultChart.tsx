@@ -18,10 +18,14 @@ interface ResultChartProps {
 }
 
 export function ResultChart({ result, inputs }: ResultChartProps) {
+    const costSeriesLabel = inputs.computeMode === 'cloud-api'
+        ? 'Cumulative API Cost'
+        : 'Cumulative GPU Cost';
+
     const data = result.monthlyData.map((row) => ({
         name: `M${row.month}`,
         month: row.month,
-        'Cumulative GPU Cost': row.cumulativeGPUCost,
+        [costSeriesLabel]: row.cumulativeGPUCost,
         'Cumulative Savings': row.cumulativeSavings,
         'Net Monthly Savings': row.netSavings,
     }));
@@ -56,7 +60,7 @@ export function ResultChart({ result, inputs }: ResultChartProps) {
                             labelStyle={{ color: '#f1f5f9' }}
                             formatter={(value: number, name: string) => {
                                 let label = name;
-                                if (name === 'Cumulative GPU Cost' && inputs.deploymentStrategy !== 'cloud' && inputs.includeTaxDepreciation) {
+                                if (name === 'Cumulative GPU Cost' && inputs.computeMode === 'self-hosted' && inputs.deploymentStrategy !== 'cloud' && inputs.includeTaxDepreciation) {
                                     label = 'Cumulative GPU Cost (Net after Tax)';
                                 }
                                 return [formatCurrency(value), label];
@@ -85,7 +89,7 @@ export function ResultChart({ result, inputs }: ResultChartProps) {
 
                         <Line
                             type="monotone"
-                            dataKey="Cumulative GPU Cost"
+                            dataKey={costSeriesLabel}
                             stroke="#ef4444"
                             strokeWidth={2}
                             dot={{ fill: '#ef4444', strokeWidth: 0, r: 4 }}

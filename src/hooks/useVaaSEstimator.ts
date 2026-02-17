@@ -1,6 +1,7 @@
 import { useState, useMemo, useCallback } from 'react';
 import {
     VAAS_CONSTANTS,
+    VAAS_INPUT_CONFIGS,
     VaaSInputs,
     VaaSResult,
     VaaSMonthlyData,
@@ -30,7 +31,31 @@ export function useVaaSEstimator(): UseVaaSEstimatorReturn {
         key: K,
         value: VaaSInputs[K]
     ) => {
-        setInputs(prev => ({ ...prev, [key]: value }));
+        setInputs(prev => {
+            if (typeof value === 'number') {
+                let nextValue = Number.isFinite(value) ? value : (prev[key] as number);
+                const config = VAAS_INPUT_CONFIGS[key as string];
+                if (config) {
+                    nextValue = Math.min(config.max, Math.max(config.min, nextValue));
+                }
+
+                if (key === 'benchmarkInternalDays') {
+                    nextValue = Math.max(1, nextValue);
+                    const updated = { ...prev, [key]: nextValue as VaaSInputs[K] };
+                    const currentVaaSDays = updated.benchmarkVaasDays ?? 0.5;
+                    updated.benchmarkVaasDays = Math.min(currentVaaSDays, nextValue);
+                    return updated;
+                }
+
+                if (key === 'benchmarkVaasDays') {
+                    const maxVaaSDays = Math.max(0.5, prev.benchmarkInternalDays ?? 0.5);
+                    nextValue = Math.min(maxVaaSDays, Math.max(0.5, nextValue));
+                }
+
+                return { ...prev, [key]: nextValue as VaaSInputs[K] };
+            }
+            return { ...prev, [key]: value };
+        });
     }, []);
 
     const resetInputs = useCallback(() => {
@@ -44,6 +69,8 @@ export function useVaaSEstimator(): UseVaaSEstimatorReturn {
             estRtlDelayWeeks,
             vaasQuotePrice,
             annualBlockCount,
+            parallelBlocks,
+            marketUpsidePerMonth,
         } = inputs;
 
         // === Timeline Calculation ===
@@ -59,11 +86,14 @@ export function useVaaSEstimator(): UseVaaSEstimatorReturn {
         }
 
         const vaasDurationMonths = traditionalDurationMonths * speedupFactor;
+        const safeTraditionalDurationMonths = Math.max(traditionalDurationMonths, 0.01);
+        const safeVaaSDurationMonths = Math.max(vaasDurationMonths, 0.01);
 
         // Months Saved needs to account for Hiring Lag (Internal finishes LATER)
         // Internal Finish = Hiring Lag + Traditional Duration
         // VaaS Finish = VaaS Duration (starts immediately, no hiring lag assumed for VaaS)
-        const internalTotalDuration = traditionalDurationMonths + (inputs.hiringLagMonths || 0);
+        const internalStartOffset = inputs.hiringLagMonths || 0;
+        const internalTotalDuration = traditionalDurationMonths + internalStartOffset;
         const monthsSaved = internalTotalDuration - vaasDurationMonths;
         const weeksSaved = monthsSaved * VAAS_CONSTANTS.WEEKS_PER_MONTH;
 
@@ -74,11 +104,15 @@ export function useVaaSEstimator(): UseVaaSEstimatorReturn {
         // Internal Team Cost (Baseline w/o Delay)
         const baseInternalTeamCost = internalTeamSize * engineerMonthlyCost * traditionalDurationMonths;
 
-        // 1. Cost of RTL Delay (Burn Rate Sensitivity)
+        // 1. Cost of Delay (Burn Rate Sensitivity)
+        // Hiring lag (pre-offer) and RTL delay are mutually exclusive.
+        // If hiring lag is present, we do not stack additional RTL delay cost.
+        const effectiveDelayWeeks = internalStartOffset > 0 ? 0 : estRtlDelayWeeks;
+
         // Delay Cost = Team Size * Weekly Burn * Delay Weeks
         // Weekly Burn per person = Monthly / 4.33 approx
         const engineerWeeklyCost = engineerMonthlyCost / VAAS_CONSTANTS.WEEKS_PER_MONTH;
-        const costOfRtlDelay = (internalTeamSize * engineerWeeklyCost) * estRtlDelayWeeks;
+        const costOfRtlDelay = (internalTeamSize * engineerWeeklyCost) * effectiveDelayWeeks;
 
         // Total Internal Cost = Base Execution + Delay Waste
         const internalTeamCost = baseInternalTeamCost + costOfRtlDelay;
@@ -108,24 +142,38 @@ export function useVaaSEstimator(): UseVaaSEstimatorReturn {
         // It also eliminates the idle time billing.
         const totalCashBurnPrevented = costOfRtlDelay + idleCashSaved;
 
+        // 5. Optional business upside from faster time-to-market.
+        const businessUpsidePerBlock = monthsSaved * marketUpsidePerMonth;
+
+        // 6. Net economic value per block.
+        const internalComparableCost = internalTeamCost + idleCashSaved;
+        const netBenefitPerBlock = internalComparableCost + businessUpsidePerBlock - vaasCost;
+
         // === Monthly Breakdown (Timeline Projection) ===
-        const maxMonths = Math.ceil(traditionalDurationMonths);
+        const maxMonths = Math.ceil(Math.max(internalTotalDuration, vaasDurationMonths));
         const monthlyData: VaaSMonthlyData[] = [];
 
         for (let month = 1; month <= maxMonths; month++) {
-            // Traditional: Linear progress over full duration
-            const traditionalProgress = Math.min((month / traditionalDurationMonths) * 100, 100);
+            // Traditional starts after internal hiring lag.
+            const elapsedExecutionMonths = Math.max(0, month - internalStartOffset);
+            const traditionalProgress = Math.min((elapsedExecutionMonths / safeTraditionalDurationMonths) * 100, 100);
 
             // VaaS: Linear progress but 2x faster
-            const vaasProgress = Math.min((month / vaasDurationMonths) * 100, 100);
+            const vaasProgress = Math.min((month / safeVaaSDurationMonths) * 100, 100);
 
-            // Cumulative costs (Internal includes projected delay amortized? Or just base?)
-            // For simple chart, let's show Base Internal vs Fixed VaaS. 
-            // Delay is usually an "Oh no" add-on. We'll stick to base for the main line 
-            // line chart to keep it clean, or we could add it at end.
-            // Let's use Base for the timeline chart to be conservative.
-            const traditionalCost = internalTeamSize * engineerMonthlyCost * month;
-            const vaasMonthCost = month <= vaasDurationMonths ? vaasQuotePrice : vaasQuotePrice;
+            // Internal execution cost accrues only after hiring lag, while delay waste accrues across lag.
+            const executionCostToDate = Math.min(
+                (elapsedExecutionMonths / safeTraditionalDurationMonths) * baseInternalTeamCost,
+                baseInternalTeamCost
+            );
+            const effectiveDelayMonths = effectiveDelayWeeks / VAAS_CONSTANTS.WEEKS_PER_MONTH;
+            const delayCostToDate = effectiveDelayWeeks > 0
+                ? Math.min((month / Math.max(effectiveDelayMonths, 0.01)) * costOfRtlDelay, costOfRtlDelay)
+                : 0;
+            const traditionalCost = executionCostToDate + delayCostToDate;
+
+            // VaaS fixed quote accrues linearly until delivery, then flatlines.
+            const vaasMonthCost = Math.min((month / safeVaaSDurationMonths) * vaasQuotePrice, vaasQuotePrice);
 
             // Idle cost
             const idleCost = traditionalCost * idleTimeFraction;
@@ -144,7 +192,8 @@ export function useVaaSEstimator(): UseVaaSEstimatorReturn {
         // If user runs N similar blocks per year
         // Value = Cash Burn Prevented * Count
         const projectedAnnualEfficiency = totalCashBurnPrevented * annualBlockCount;
-        const projectedAnnualTimeSaved = monthsSaved * annualBlockCount;
+        const projectedAnnualTimeSaved = (monthsSaved * annualBlockCount) / Math.max(1, parallelBlocks);
+        const projectedAnnualNetBenefit = netBenefitPerBlock * annualBlockCount;
 
         return {
             traditionalDurationMonths,
@@ -157,12 +206,15 @@ export function useVaaSEstimator(): UseVaaSEstimatorReturn {
             costOfRtlDelay,
             totalCashBurnPrevented,
             idleCashSaved,
+            businessUpsidePerBlock,
+            netBenefitPerBlock,
             monthlyData,
             projectedAnnualEfficiency,
             projectedAnnualTimeSaved,
+            projectedAnnualNetBenefit,
             isBenchmarkMode: inputs.isBenchmarkMode,
             provenSpeedupRatio,
-            internalStartOffset: inputs.hiringLagMonths,
+            internalStartOffset,
         };
     }, [inputs]);
 

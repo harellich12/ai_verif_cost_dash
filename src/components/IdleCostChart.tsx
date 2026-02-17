@@ -27,11 +27,8 @@ function formatCurrency(value: number): string {
 
 export function IdleCostChart({ result }: IdleCostChartProps) {
     // Calculate cost breakdown
-    const idleTimeFraction = 0.30; // 30% idle time
-    const activeFraction = 1 - idleTimeFraction;
-
-    const internalActiveCost = result.internalTeamCost * activeFraction;
-    const internalIdleCost = result.internalTeamCost * idleTimeFraction;
+    const internalActiveCost = result.internalTeamCost;
+    const internalIdleCost = result.idleCashSaved;
     const vaasCost = result.vaasCost;
 
     // Data for stacked bar chart
@@ -40,7 +37,7 @@ export function IdleCostChart({ result }: IdleCostChartProps) {
             name: 'Internal Team',
             activeCost: internalActiveCost,
             idleCost: internalIdleCost,
-            total: result.internalTeamCost,
+            total: result.internalTeamCost + result.idleCashSaved,
         },
         {
             name: 'VaaS',
@@ -50,7 +47,7 @@ export function IdleCostChart({ result }: IdleCostChartProps) {
         },
     ];
 
-    const maxCost = result.internalTeamCost;
+    const maxCost = Math.max(result.internalTeamCost + result.idleCashSaved, vaasCost);
     const idleTaxSavings = internalIdleCost;
 
     return (

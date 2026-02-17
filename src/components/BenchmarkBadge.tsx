@@ -3,14 +3,15 @@ import { TrendingUp, Calendar, Zap } from 'lucide-react';
 
 interface BenchmarkBadgeProps {
     annualBlockCount: number;
+    parallelBlocks?: number;
 }
 
-export function BenchmarkBadge({ annualBlockCount }: BenchmarkBadgeProps) {
+export function BenchmarkBadge({ annualBlockCount, parallelBlocks = 1 }: BenchmarkBadgeProps) {
     const [daysSaved, setDaysSaved] = useState<number>(5);
 
     // Extrapolate to annual efficiency
     // daysSaved per block × blocks per year × 8 hours per day = annual hours saved
-    const annualDaysSaved = daysSaved * annualBlockCount;
+    const annualDaysSaved = (daysSaved * annualBlockCount) / Math.max(1, parallelBlocks);
     const annualHoursSaved = annualDaysSaved * 8;
 
     // Convert to engineer-months (~160 hours per month)
@@ -41,7 +42,7 @@ export function BenchmarkBadge({ annualBlockCount }: BenchmarkBadgeProps) {
                     onChange={(e) => setDaysSaved(Math.max(1, Math.min(30, Number(e.target.value))))}
                     className="w-16 bg-slate-800 border border-slate-700 rounded-lg px-2 py-1 text-sm text-center text-slate-200 focus:outline-none focus:ring-2 focus:ring-violet-500"
                 />
-                <span className="text-xs text-slate-500">× {annualBlockCount} blocks/yr</span>
+                <span className="text-xs text-slate-500">× {annualBlockCount} blocks/yr ÷ {parallelBlocks} parallel</span>
             </div>
 
             {/* Results */}

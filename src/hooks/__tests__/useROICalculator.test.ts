@@ -30,6 +30,18 @@ describe('useROICalculator', () => {
         expect(result.current.result.monthlyGPUCost).toBeCloseTo(total, 1);
     });
 
+    it('should not double count on-prem capex in annual totals', () => {
+        const { result } = renderHook(() => useROICalculator());
+
+        act(() => {
+            result.current.updateInput('deploymentStrategy', 'onprem');
+            result.current.updateInput('computeMode', 'self-hosted');
+        });
+
+        // Annual cost should be monthly selected cost * 12 (no extra upfront add-on).
+        expect(result.current.result.totalGPUCost).toBeCloseTo(result.current.result.monthlyGPUCost * 12, 1);
+    });
+
     it('should calculate Engineering Savings correctly', () => {
         const { result } = renderHook(() => useROICalculator());
 
@@ -42,6 +54,20 @@ describe('useROICalculator', () => {
         // Savings = 187,500 * 0.5 * 0.3 = 28,125
 
         expect(result.current.result.monthlyEngineerValueSaved).toBeCloseTo(28125, 0);
+    });
+
+    it('should use API bill as primary compute cost in cloud-api mode', () => {
+        const { result } = renderHook(() => useROICalculator());
+
+        act(() => {
+            result.current.updateInput('computeMode', 'cloud-api');
+        });
+
+        expect(result.current.result.monthlyGPUCost).toBeCloseTo(result.current.result.monthlyAPIBill, 5);
+        expect(result.current.result.opExDelta).toBeCloseTo(
+            result.current.result.monthlyAPIBill - result.current.result.monthlyEngineerValueSaved,
+            5
+        );
     });
 
     it('should update inputs and recalculate', () => {
