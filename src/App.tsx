@@ -182,7 +182,7 @@ function App() {
             <main className="flex-1 overflow-y-auto">
                 <header className="sticky top-0 z-10 bg-background/80 backdrop-blur-md border-b border-slate-700/50 px-6 py-4">
                     <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-3 flex-wrap justify-end">
                             <div className={`p-2 rounded-lg ${mode === 'roi' ? 'bg-accent/20' : 'bg-violet-500/20'}`}>
                                 <Icon className={`w-6 h-6 ${mode === 'roi' ? 'text-accent' : 'text-violet-400'}`} />
                             </div>

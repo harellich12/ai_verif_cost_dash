@@ -67,6 +67,7 @@ export function useROICalculator(): UseROICalculatorReturn {
             numEngineers,
             numGPUs,
             aiEfficiencyGain,
+            humanReviewPercent,
             gpuUtilization,
             bugProbability,
             bugReductionWithAI,
@@ -86,6 +87,7 @@ export function useROICalculator(): UseROICalculatorReturn {
 
         // Convert percentages to decimals
         const efficiencyGainDecimal = aiEfficiencyGain / 100;
+        const humanReviewDecimal = humanReviewPercent / 100;
         const utilizationDecimal = gpuUtilization / 100;
         const bugProbDecimal = bugProbability / 100;
         const bugReductionDecimal = bugReductionWithAI / 100;
@@ -147,7 +149,9 @@ export function useROICalculator(): UseROICalculatorReturn {
 
         // Value of debugging time saved with AI
         const debugTimeSavedFraction = CONSTANTS.DEBUG_TIME_RATIO * efficiencyGainDecimal;
-        const monthlyEngineerValueSaved = numEngineers * engineerMonthlyCost * debugTimeSavedFraction;
+        const grossMonthlyEngineerValueSaved = numEngineers * engineerMonthlyCost * debugTimeSavedFraction;
+        const monthlyHumanReviewCost = grossMonthlyEngineerValueSaved * humanReviewDecimal;
+        const monthlyEngineerValueSaved = grossMonthlyEngineerValueSaved - monthlyHumanReviewCost;
 
         // Effective cost with AI
         const monthlyEngineerCostWithAI = monthlyEngineerCostBaseline - monthlyEngineerValueSaved;
@@ -220,6 +224,7 @@ export function useROICalculator(): UseROICalculatorReturn {
         // === Total Annual Values ===
         const totalGPUCost = monthlySelectedCost * 12;
         const totalEngineerSavings = monthlyEngineerValueSaved * 12;
+        const annualHumanReviewCost = monthlyHumanReviewCost * 12;
         const netSavingsYear = totalEngineerSavings - totalGPUCost;
         const roiPercent = totalGPUCost > 0 ? ((totalEngineerSavings - totalGPUCost) / totalGPUCost) * 100 : 0;
 
@@ -260,6 +265,8 @@ export function useROICalculator(): UseROICalculatorReturn {
             monthlyGPUCost,
             monthlySelfHostedCost,
             monthlyEngineerValueSaved,
+            monthlyHumanReviewCost,
+            annualHumanReviewCost,
             opExDelta,
             // V3: API cost comparison
             apiCostPerFile,

@@ -71,6 +71,7 @@ export function useVaaSEstimator(): UseVaaSEstimatorReturn {
             annualBlockCount,
             parallelBlocks,
             marketUpsidePerMonth,
+            humanReviewPercent,
         } = inputs;
 
         // === Timeline Calculation ===
@@ -145,9 +146,14 @@ export function useVaaSEstimator(): UseVaaSEstimatorReturn {
         // 5. Optional business upside from faster time-to-market.
         const businessUpsidePerBlock = monthsSaved * marketUpsidePerMonth;
 
-        // 6. Net economic value per block.
+        // 6. Client-side HITL review burden on saved effort.
+        const grossReviewBasePerBlock = fteMonthsSaved * engineerMonthlyCost;
+        const clientReviewCostPerBlock = grossReviewBasePerBlock * (humanReviewPercent / 100);
+        const annualClientReviewCost = clientReviewCostPerBlock * annualBlockCount;
+
+        // 7. Net economic value per block.
         const internalComparableCost = internalTeamCost + idleCashSaved;
-        const netBenefitPerBlock = internalComparableCost + businessUpsidePerBlock - vaasCost;
+        const netBenefitPerBlock = internalComparableCost + businessUpsidePerBlock - vaasCost - clientReviewCostPerBlock;
 
         // === Monthly Breakdown (Timeline Projection) ===
         const maxMonths = Math.ceil(Math.max(internalTotalDuration, vaasDurationMonths));
@@ -173,7 +179,9 @@ export function useVaaSEstimator(): UseVaaSEstimatorReturn {
             const traditionalCost = executionCostToDate + delayCostToDate;
 
             // VaaS fixed quote accrues linearly until delivery, then flatlines.
-            const vaasMonthCost = Math.min((month / safeVaaSDurationMonths) * vaasQuotePrice, vaasQuotePrice);
+            const vaasQuoteAccrued = Math.min((month / safeVaaSDurationMonths) * vaasQuotePrice, vaasQuotePrice);
+            const reviewCostAccrued = Math.min((month / safeVaaSDurationMonths) * clientReviewCostPerBlock, clientReviewCostPerBlock);
+            const vaasMonthCost = vaasQuoteAccrued + reviewCostAccrued;
 
             // Idle cost
             const idleCost = traditionalCost * idleTimeFraction;
@@ -184,6 +192,7 @@ export function useVaaSEstimator(): UseVaaSEstimatorReturn {
                 vaasProgress,
                 traditionalCost,
                 vaasCost: vaasMonthCost,
+                clientReviewCost: reviewCostAccrued,
                 idleCost,
             });
         }
@@ -207,6 +216,8 @@ export function useVaaSEstimator(): UseVaaSEstimatorReturn {
             totalCashBurnPrevented,
             idleCashSaved,
             businessUpsidePerBlock,
+            clientReviewCostPerBlock,
+            annualClientReviewCost,
             netBenefitPerBlock,
             monthlyData,
             projectedAnnualEfficiency,

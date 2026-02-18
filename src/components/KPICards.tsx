@@ -94,7 +94,7 @@ export function KPICards({ result, inputs }: KPICardsProps) {
                         <Target className="w-5 h-5 text-cyan-400" />
                         <span className="text-sm font-medium text-slate-400">Monthly OpEx Comparison</span>
                     </div>
-                    <div className="grid grid-cols-3 gap-4">
+                    <div className="grid grid-cols-4 gap-4">
                         <div>
                             <div className="text-lg font-semibold text-slate-300">
                                 {formatCurrency(result.monthlyGPUCost, true)}
@@ -106,6 +106,12 @@ export function KPICards({ result, inputs }: KPICardsProps) {
                                 {formatCurrency(result.monthlyEngineerValueSaved, true)}
                             </div>
                             <div className="text-xs text-slate-500">Eng. Value Saved</div>
+                        </div>
+                        <div>
+                            <div className="text-lg font-semibold text-amber-400">
+                                {formatCurrency(result.monthlyHumanReviewCost, true)}
+                            </div>
+                            <div className="text-xs text-slate-500">Human Review Cost</div>
                         </div>
                         <div>
                             <div className={`text-lg font-semibold ${result.opExDelta < 0 ? 'text-success' : 'text-danger'}`}>
@@ -125,7 +131,7 @@ export function KPICards({ result, inputs }: KPICardsProps) {
                         <DollarSign className="w-5 h-5 text-indigo-400" />
                         <span className="text-sm font-medium text-slate-400">Annual Investment Summary</span>
                     </div>
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-3 gap-4">
                         <div>
                             <div className="text-lg font-semibold text-slate-300">
                                 {formatCurrency(result.totalGPUCost, true)}
@@ -137,6 +143,12 @@ export function KPICards({ result, inputs }: KPICardsProps) {
                                 {formatCurrency(result.totalEngineerSavings, true)}
                             </div>
                             <div className="text-xs text-slate-500">Total Engineering Savings</div>
+                        </div>
+                        <div>
+                            <div className="text-lg font-semibold text-amber-400">
+                                {formatCurrency(result.annualHumanReviewCost, true)}
+                            </div>
+                            <div className="text-xs text-slate-500">Annual Human Review Cost</div>
                         </div>
                     </div>
                 </div>

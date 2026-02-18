@@ -1,7 +1,5 @@
 import { useState } from 'react';
 import { FileText, Loader2 } from 'lucide-react';
-import html2canvas from 'html2canvas';
-import jsPDF from 'jspdf';
 
 export function PrintReportBtn() {
     const [isGenerating, setIsGenerating] = useState(false);
@@ -13,6 +11,11 @@ export function PrintReportBtn() {
         setIsGenerating(true);
 
         try {
+            const [{ default: html2canvas }, { default: jsPDF }] = await Promise.all([
+                import('html2canvas'),
+                import('jspdf'),
+            ]);
+
             // 1. Capture the DOM
             const canvas = await html2canvas(
                 element,

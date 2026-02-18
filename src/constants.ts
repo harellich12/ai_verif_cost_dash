@@ -82,6 +82,15 @@ export const INPUT_CONFIGS: Record<string, InputConfig> = {
         unit: '%',
         tooltip: 'Percentage of debugging time saved by AI',
     },
+    humanReviewPercent: {
+        label: 'Human Review %',
+        min: 0,
+        max: 60,
+        step: 5,
+        default: 20,
+        unit: '%',
+        tooltip: 'Engineer oversight effort required to review AI-generated output',
+    },
     gpuUtilization: {
         label: 'GPU Utilization',
         min: 20,
@@ -192,6 +201,7 @@ export interface CalculatorInputs {
     numEngineers: number;
     numGPUs: number;
     aiEfficiencyGain: number;      // percentage
+    humanReviewPercent: number;    // percentage
     gpuUtilization: number;        // percentage
     bugProbability: number;        // percentage
     bugReductionWithAI: number;    // percentage
@@ -240,6 +250,8 @@ export interface CalculationResult {
     monthlyGPUCost: number; // Selected compute path monthly cost (legacy field name)
     monthlySelfHostedCost: number; // Self-hosted monthly infra cost for API-vs-GPU comparison
     monthlyEngineerValueSaved: number;
+    monthlyHumanReviewCost: number;
+    annualHumanReviewCost: number;
     opExDelta: number;
 
     // V3: API Cost comparison
@@ -254,6 +266,7 @@ export function getDefaultInputs(): CalculatorInputs {
         numEngineers: INPUT_CONFIGS.numEngineers.default,
         numGPUs: INPUT_CONFIGS.numGPUs.default,
         aiEfficiencyGain: INPUT_CONFIGS.aiEfficiencyGain.default,
+        humanReviewPercent: INPUT_CONFIGS.humanReviewPercent.default,
         gpuUtilization: INPUT_CONFIGS.gpuUtilization.default,
         bugProbability: INPUT_CONFIGS.bugProbability.default,
         bugReductionWithAI: INPUT_CONFIGS.bugReductionWithAI.default,

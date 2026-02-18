@@ -1,4 +1,3 @@
-import * as XLSX from 'xlsx';
 import { CalculatorInputs, CalculationResult, MonthlyData, CONSTANTS } from '../constants';
 import { Download } from 'lucide-react';
 
@@ -16,14 +15,15 @@ interface ExcelExportBtnProps {
  */
 export function ExcelExportBtn({ inputs, result }: ExcelExportBtnProps) {
 
-    const handleExport = () => {
+    const handleExport = async () => {
+        const XLSX = await import('xlsx');
         const selectedMonthlyCostLabel = inputs.computeMode === 'cloud-api'
             ? 'Monthly API Cost (Selected Path)'
             : 'Monthly GPU/Infra Cost (Selected Path)';
         const wb = XLSX.utils.book_new();
 
         // === Sheet 1: Parameters (Input Assumptions) ===
-        const wsParams: XLSX.WorkSheet = {};
+        const wsParams: Record<string, unknown> = {};
 
         // Header
         wsParams['A1'] = { t: 's', v: 'GenAI Verification ROI Calculator - Input Parameters' };
@@ -48,6 +48,10 @@ export function ExcelExportBtn({ inputs, result }: ExcelExportBtnProps) {
         wsParams['A9'] = { t: 's', v: 'AI Efficiency Gain' };
         wsParams['B9'] = { t: 'n', v: inputs.aiEfficiencyGain };
         wsParams['C9'] = { t: 's', v: '%' };
+
+        wsParams['A13'] = { t: 's', v: 'Human Review %' };
+        wsParams['B13'] = { t: 'n', v: inputs.humanReviewPercent };
+        wsParams['C13'] = { t: 's', v: '%' };
 
         wsParams['A10'] = { t: 's', v: 'GPU Utilization' };
         wsParams['B10'] = { t: 'n', v: inputs.gpuUtilization };
@@ -131,7 +135,7 @@ export function ExcelExportBtn({ inputs, result }: ExcelExportBtnProps) {
         XLSX.utils.book_append_sheet(wb, wsParams, 'Parameters');
 
         // === Sheet 2: Summary Results (Snapshot) ===
-        const wsSummary: XLSX.WorkSheet = {};
+        const wsSummary: Record<string, unknown> = {};
 
         wsSummary['A1'] = { t: 's', v: 'GenAI Verification ROI Calculator - Summary Results' };
         wsSummary['A2'] = { t: 's', v: 'Export Timestamp:' };
@@ -158,6 +162,8 @@ export function ExcelExportBtn({ inputs, result }: ExcelExportBtnProps) {
 
         wsSummary['A10'] = { t: 's', v: 'Total Annual Eng. Savings' };
         wsSummary['B10'] = { t: 'n', v: result.totalEngineerSavings };
+        wsSummary['A11'] = { t: 's', v: 'Annual Human Review Cost' };
+        wsSummary['B11'] = { t: 'n', v: result.annualHumanReviewCost };
 
         // Risk
         wsSummary['A12'] = { t: 's', v: '=== RISK ANALYSIS ===' };
@@ -178,10 +184,13 @@ export function ExcelExportBtn({ inputs, result }: ExcelExportBtnProps) {
         wsSummary['A19'] = { t: 's', v: 'Monthly Eng. Value Saved' };
         wsSummary['B19'] = { t: 'n', v: result.monthlyEngineerValueSaved };
 
-        wsSummary['A20'] = { t: 's', v: 'Monthly OpEx Delta' };
-        wsSummary['B20'] = { t: 'n', v: result.opExDelta };
-        wsSummary['A21'] = { t: 's', v: 'Monthly Self-Hosted Baseline' };
-        wsSummary['B21'] = { t: 'n', v: result.monthlySelfHostedCost };
+        wsSummary['A20'] = { t: 's', v: 'Monthly Human Review Cost' };
+        wsSummary['B20'] = { t: 'n', v: result.monthlyHumanReviewCost };
+
+        wsSummary['A21'] = { t: 's', v: 'Monthly OpEx Delta' };
+        wsSummary['B21'] = { t: 'n', v: result.opExDelta };
+        wsSummary['A22'] = { t: 's', v: 'Monthly Self-Hosted Baseline' };
+        wsSummary['B22'] = { t: 'n', v: result.monthlySelfHostedCost };
 
         // API Comparison
         wsSummary['A23'] = { t: 's', v: '=== API vs GPU COMPARISON (V4) ===' };

@@ -51,9 +51,61 @@ describe('useROICalculator', () => {
 
         // AI Efficiency = 30% (default)
         // Debug Ratio = 50%
-        // Savings = 187,500 * 0.5 * 0.3 = 28,125
+        // Gross Savings = 187,500 * 0.5 * 0.3 = 28,125
+        // Human Review (20%) = 5,625
+        // Net Savings = 22,500
 
+        expect(result.current.result.monthlyHumanReviewCost).toBeCloseTo(5625, 0);
+        expect(result.current.result.monthlyEngineerValueSaved).toBeCloseTo(22500, 0);
+        expect(result.current.result.annualHumanReviewCost).toBeCloseTo(67500, 0);
+    });
+
+    it('should match legacy savings when human review percent is zero', () => {
+        const { result } = renderHook(() => useROICalculator());
+
+        act(() => {
+            result.current.updateInput('humanReviewPercent', 0);
+        });
+
+        expect(result.current.result.monthlyHumanReviewCost).toBeCloseTo(0, 5);
         expect(result.current.result.monthlyEngineerValueSaved).toBeCloseTo(28125, 0);
+    });
+
+    it('should reduce net ROI as human review percent increases', () => {
+        const { result } = renderHook(() => useROICalculator());
+
+        act(() => {
+            result.current.updateInput('humanReviewPercent', 0);
+        });
+        const roiAtZero = result.current.result.roiPercent;
+
+        act(() => {
+            result.current.updateInput('humanReviewPercent', 60);
+        });
+        const roiAtSixty = result.current.result.roiPercent;
+
+        expect(roiAtSixty).toBeLessThan(roiAtZero);
+    });
+
+    it('should delay or eliminate break-even at higher human review percent in marginal scenario', () => {
+        const { result } = renderHook(() => useROICalculator());
+
+        act(() => {
+            result.current.updateInput('numGPUs', 16);
+            result.current.updateInput('humanReviewPercent', 0);
+        });
+        const breakEvenLowReview = result.current.result.breakEvenMonth;
+
+        act(() => {
+            result.current.updateInput('humanReviewPercent', 60);
+        });
+        const breakEvenHighReview = result.current.result.breakEvenMonth;
+
+        if (breakEvenLowReview !== null && breakEvenHighReview !== null) {
+            expect(breakEvenHighReview).toBeGreaterThanOrEqual(breakEvenLowReview);
+        } else {
+            expect(breakEvenHighReview === null || breakEvenLowReview === null).toBe(true);
+        }
     });
 
     it('should use API bill as primary compute cost in cloud-api mode', () => {

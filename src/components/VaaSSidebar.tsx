@@ -221,6 +221,34 @@ export function VaaSSidebar({ inputs, onInputChange, onReset, sectionVisibility 
                     </div>
                 )}
 
+                {sectionVisibility?.teamDelay !== false && (
+                    <div className="space-y-2">
+                        <div className="flex items-center justify-between">
+                            <label className="flex items-center gap-2 text-sm text-slate-400">
+                                <Users size={14} />
+                                Human Review %
+                                <SliderHelp text={VAAS_INPUT_CONFIGS.humanReviewPercent.tooltip || 'Client-side engineer review effort applied to saved effort'} />
+                            </label>
+                            <span className="text-sm font-medium text-cyan-400">
+                                {inputs.humanReviewPercent}%
+                            </span>
+                        </div>
+                        <input
+                            type="range"
+                            min={VAAS_INPUT_CONFIGS.humanReviewPercent.min}
+                            max={VAAS_INPUT_CONFIGS.humanReviewPercent.max}
+                            step={VAAS_INPUT_CONFIGS.humanReviewPercent.step}
+                            value={inputs.humanReviewPercent}
+                            onChange={(e) => onInputChange('humanReviewPercent', Number(e.target.value))}
+                            className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-cyan-500"
+                        />
+                        <div className="flex justify-between text-xs text-slate-500">
+                            <span>{VAAS_INPUT_CONFIGS.humanReviewPercent.min}%</span>
+                            <span>{VAAS_INPUT_CONFIGS.humanReviewPercent.max}%</span>
+                        </div>
+                    </div>
+                )}
+
                 {sectionVisibility?.pricing !== false && (
                     <div className="space-y-2">
                         <div className="flex items-center justify-between">

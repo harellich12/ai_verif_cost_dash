@@ -42,6 +42,7 @@ Presentation filters are configured from **Presentation Setup** (Admin only) and
   - **Self-Hosted**: infra cost path based on GPUs/deployment assumptions.
   - **Cloud API**: token-based cost path using jobs/runs/retries.
 - **AI Efficiency Gain (%)**: proportion of debug effort improved by AI.
+- **Human Review (%)**: client/engineer oversight applied to AI-generated savings (default 20%).
 - **GPU Utilization (%)**: affects cloud-rental style compute economics.
 - **Bug Escape Probability / Bug Reduction**: risk-value estimation inputs.
 - **Advanced**:
@@ -61,11 +62,15 @@ Tooltips (`?`) next to sliders explain each assumption.
   - monthly API vs self-hosted baseline
   - crossover interactive volume
   - recommendation signal
+- **Human Review Cost**:
+  - monthly review clawback
+  - annual review clawback
 - **Result chart**: cumulative 12-month cash-flow behavior.
 - **Executive summary**: auto-generated narrative for business communication.
 
 ### 4.3 Interpreting ROI Safely
 - A positive ROI is only as reliable as efficiency and workload assumptions.
+- Human Review % reduces gross AI savings before ROI is computed.
 - Validate with pilot data where possible (jobs/day, retries, utilization).
 - Treat crossover points as directional unless calibrated from production telemetry.
 
@@ -82,6 +87,7 @@ Tooltips (`?`) next to sliders explain each assumption.
 - **Annual Block Count**
 - **Parallel Blocks**: adjusts annual calendar time-saved projection.
 - **Market Upside ($/month)**: optional business upside from faster delivery.
+- **Human Review (%)**: client-side review effort on saved effort (default 20%).
 - **Benchmark Validator (optional)**:
   - Replace default speedup with measured internal vs VaaS benchmark days.
 
@@ -92,17 +98,20 @@ Tooltips (`?`) are available for sliders and key value fields.
 - **Capacity Unlocked (FTE-months)**
 - **Cash Burn Prevented**
 - **Business Upside per Block**
+- **Client Review Cost per Block**
 - **Net Benefit per Block**
 - **Annual projections**:
   - total efficiency impact
   - parallelism-adjusted calendar time saved
+  - annual client review cost
   - annual net benefit
 - **Timeline and cost charts** for internal vs VaaS progression.
 
 ### 5.3 VaaS Economics Logic (high level)
 - `monthsSaved = (internal duration + hiring lag) - vaas duration`
 - `businessUpsidePerBlock = monthsSaved * marketUpsidePerMonth`
-- `netBenefitPerBlock = (internalTeamCost + idleCashSaved + businessUpsidePerBlock) - vaasQuotePrice`
+- `clientReviewCostPerBlock = fteMonthsSaved * engineerMonthlyCost * humanReviewPercent`
+- `netBenefitPerBlock = (internalTeamCost + idleCashSaved + businessUpsidePerBlock) - vaasQuotePrice - clientReviewCostPerBlock`
 - `projectedAnnualNetBenefit = netBenefitPerBlock * annualBlockCount`
 
 Use `Market Upside = 0` for a strictly cost/capacity-only view.

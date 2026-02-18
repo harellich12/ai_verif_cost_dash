@@ -101,6 +101,15 @@ export const VAAS_INPUT_CONFIGS: Record<string, VaaSInputConfig> = {
         unit: '$/mo',
         tooltip: 'Optional business upside from earlier delivery (revenue/profit impact per month)',
     },
+    humanReviewPercent: {
+        label: 'Human Review %',
+        min: 0,
+        max: 60,
+        step: 5,
+        default: 20,
+        unit: '%',
+        tooltip: 'Client-side engineer review effort to verify and control AI output quality',
+    },
     hiringLagMonths: {
         label: 'Internal Hiring Lag',
         min: 0,
@@ -122,6 +131,7 @@ export interface VaaSInputs {
     annualBlockCount: number;
     parallelBlocks: number;
     marketUpsidePerMonth: number;
+    humanReviewPercent: number;
     hiringLagMonths: number;
     isBenchmarkMode?: boolean;
     benchmarkInternalDays?: number;
@@ -135,6 +145,7 @@ export interface VaaSMonthlyData {
     vaasProgress: number;         // 0-100% completion
     traditionalCost: number;      // Cumulative internal cost
     vaasCost: number;             // Cumulative VaaS cost
+    clientReviewCost: number;     // Cumulative client-side review cost
     idleCost: number;             // Idle time cost (internal only)
 }
 
@@ -156,6 +167,8 @@ export interface VaaSResult {
     totalCashBurnPrevented: number; // Delay Savings + Efficiency Savings (Idle Tax) [Replaces Revenue Gained]
     idleCashSaved: number;         // Kept for chart/logic, represents inefficiency of internal flow
     businessUpsidePerBlock: number; // Optional upside from faster time to market
+    clientReviewCostPerBlock: number; // Client-side human review cost
+    annualClientReviewCost: number;   // Client-side human review cost annualized
     netBenefitPerBlock: number;     // Internal comparable cost + upside - VaaS quote
 
     // Monthly Breakdown
@@ -183,6 +196,7 @@ export function getDefaultVaaSInputs(): VaaSInputs {
         annualBlockCount: VAAS_INPUT_CONFIGS.annualBlockCount.default,
         parallelBlocks: VAAS_INPUT_CONFIGS.parallelBlocks.default,
         marketUpsidePerMonth: VAAS_INPUT_CONFIGS.marketUpsidePerMonth.default,
+        humanReviewPercent: VAAS_INPUT_CONFIGS.humanReviewPercent.default,
         hiringLagMonths: VAAS_INPUT_CONFIGS.hiringLagMonths.default,
         isBenchmarkMode: false,
         benchmarkInternalDays: 20,

@@ -16,6 +16,7 @@ export function BenchmarkBadge({ annualBlockCount, parallelBlocks = 1 }: Benchma
 
     // Convert to engineer-months (~160 hours per month)
     const engineerMonthsSaved = annualHoursSaved / 160;
+    const formatOneDecimal = (value: number) => (Math.round(value * 10) / 10).toFixed(1);
 
     return (
         <div className="bg-gradient-to-br from-violet-500/10 to-emerald-500/10 rounded-xl p-4 border border-violet-500/30">
@@ -49,19 +50,19 @@ export function BenchmarkBadge({ annualBlockCount, parallelBlocks = 1 }: Benchma
             <div className="grid grid-cols-3 gap-3">
                 <div className="text-center p-2 bg-slate-800/50 rounded-lg">
                     <div className="text-lg font-bold text-violet-400">
-                        {annualDaysSaved}
+                        {formatOneDecimal(annualDaysSaved)}
                     </div>
                     <div className="text-xs text-slate-500">Days/Year</div>
                 </div>
                 <div className="text-center p-2 bg-slate-800/50 rounded-lg">
                     <div className="text-lg font-bold text-emerald-400">
-                        {annualHoursSaved.toLocaleString()}
+                        {formatOneDecimal(annualHoursSaved)}
                     </div>
                     <div className="text-xs text-slate-500">Hours/Year</div>
                 </div>
                 <div className="text-center p-2 bg-slate-800/50 rounded-lg">
                     <div className="text-lg font-bold text-amber-400">
-                        {engineerMonthsSaved.toFixed(1)}
+                        {formatOneDecimal(engineerMonthsSaved)}
                     </div>
                     <div className="text-xs text-slate-500">Eng-Months</div>
                 </div>
@@ -71,7 +72,7 @@ export function BenchmarkBadge({ annualBlockCount, parallelBlocks = 1 }: Benchma
             <div className="mt-3 flex items-center justify-center gap-2 text-xs text-violet-300">
                 <Zap size={12} />
                 <span>
-                    Equivalent to {engineerMonthsSaved.toFixed(1)} engineer-months of capacity annually
+                    Equivalent to {formatOneDecimal(engineerMonthsSaved)} engineer-months of capacity annually
                 </span>
             </div>
         </div>

@@ -6,7 +6,7 @@ interface VaaSKPICardsProps {
 
 export function VaaSKPICards({ result }: VaaSKPICardsProps) {
     return (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
             <div className="bg-slate-800/50 rounded-xl p-4 border border-slate-700/50">
                 <div className="text-sm text-slate-400">Net Benefit / Block</div>
                 <div className={`text-2xl font-bold ${result.netBenefitPerBlock >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
@@ -50,6 +50,15 @@ export function VaaSKPICards({ result }: VaaSKPICardsProps) {
                 </div>
                 <div className="text-xs text-slate-500 mt-1">
                     Time-to-market benefit (optional)
+                </div>
+            </div>
+            <div className="bg-slate-800/50 rounded-xl p-4 border border-slate-700/50">
+                <div className="text-sm text-slate-400">Client Review Cost / Block</div>
+                <div className="text-2xl font-bold text-cyan-400">
+                    ${(result.clientReviewCostPerBlock / 1000).toFixed(0)}K
+                </div>
+                <div className="text-xs text-slate-500 mt-1">
+                    Client-side HITL oversight effort
                 </div>
             </div>
         </div>

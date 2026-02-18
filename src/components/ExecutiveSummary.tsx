@@ -44,6 +44,7 @@ function generateRecommendation(inputs: CalculatorInputs, result: CalculationRes
         const suggestions = [
             `ROI of ${roiPercent.toFixed(0)}% significantly exceeds typical infrastructure investments`,
             `Document efficiency gains to build case for further AI adoption`,
+            `Human review overhead is included in this model's net economics`,
         ];
         if (computeMode === 'self-hosted') {
             suggestions.splice(1, 0, 'Consider expanding GPU allocation if utilization remains high');
@@ -76,6 +77,7 @@ function generateRecommendation(inputs: CalculatorInputs, result: CalculationRes
             `Validate AI efficiency assumptions with pilot programs`,
             `Consider reducing GPU count or switching to on-demand rental`,
             `Explore hybrid approaches with selective AI deployment`,
+            `Human review overhead is included in this model's net economics`,
         ];
 
         // V3: Add API alternative suggestion when ROI is negative

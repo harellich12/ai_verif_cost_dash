@@ -1,4 +1,3 @@
-import * as XLSX from 'xlsx';
 import { VaaSInputs, VaaSResult, VAAS_CONSTANTS } from '../vaasConstants';
 import { Download } from 'lucide-react';
 
@@ -13,11 +12,12 @@ interface VaaSExcelExportBtnProps {
  */
 export function VaaSExcelExportBtn({ inputs, result }: VaaSExcelExportBtnProps) {
 
-    const handleExport = () => {
+    const handleExport = async () => {
+        const XLSX = await import('xlsx');
         const wb = XLSX.utils.book_new();
 
         // === Sheet 1: Quote Summary ===
-        const wsQuote: XLSX.WorkSheet = {};
+        const wsQuote: Record<string, unknown> = {};
 
         // Header
         wsQuote['A1'] = { t: 's', v: 'VaaS Quote & Timeline Estimator' };
@@ -65,6 +65,9 @@ export function VaaSExcelExportBtn({ inputs, result }: VaaSExcelExportBtnProps) 
         wsQuote['A16'] = { t: 's', v: 'Market Upside' };
         wsQuote['B16'] = { t: 'n', v: inputs.marketUpsidePerMonth };
         wsQuote['C16'] = { t: 's', v: '$/month' };
+        wsQuote['A17'] = { t: 's', v: 'Human Review %' };
+        wsQuote['B17'] = { t: 'n', v: inputs.humanReviewPercent };
+        wsQuote['C17'] = { t: 's', v: '%' };
 
         // Section: Key Outcomes
         wsQuote['A18'] = { t: 's', v: '=== HARD METRICS (Per Block) ===' };
@@ -89,11 +92,14 @@ export function VaaSExcelExportBtn({ inputs, result }: VaaSExcelExportBtnProps) 
 
         wsQuote['A24'] = { t: 's', v: 'Net Benefit / Block' };
         wsQuote['B24'] = { t: 'n', v: result.netBenefitPerBlock };
-        wsQuote['C24'] = { t: 's', v: '$ (internal comparable + upside - quote)' };
+        wsQuote['C24'] = { t: 's', v: '$ (internal comparable + upside - quote - client review)' };
 
         wsQuote['A25'] = { t: 's', v: 'Total Project Cost (Internal)' };
         wsQuote['B25'] = { t: 'n', v: result.internalTeamCost };
         wsQuote['C25'] = { t: 's', v: '$ (includes effective delay)' };
+        wsQuote['A26'] = { t: 's', v: 'Client Review Cost / Block' };
+        wsQuote['B26'] = { t: 'n', v: result.clientReviewCostPerBlock };
+        wsQuote['C26'] = { t: 's', v: '$ (client-side HITL)' };
 
         // Section: Annual Projection
         wsQuote['A27'] = { t: 's', v: '=== ANNUAL EFFICIENCY PROJECTION ===' };
@@ -115,9 +121,12 @@ export function VaaSExcelExportBtn({ inputs, result }: VaaSExcelExportBtnProps) 
         wsQuote['A32'] = { t: 's', v: 'Annual Net Benefit' };
         wsQuote['B32'] = { t: 'n', v: result.projectedAnnualNetBenefit };
         wsQuote['C32'] = { t: 's', v: '$' };
+        wsQuote['A33'] = { t: 's', v: 'Annual Client Review Cost' };
+        wsQuote['B33'] = { t: 'n', v: result.annualClientReviewCost };
+        wsQuote['C33'] = { t: 's', v: '$' };
 
         wsQuote['!cols'] = [{ wch: 30 }, { wch: 20 }, { wch: 20 }];
-        wsQuote['!ref'] = 'A1:C32';
+        wsQuote['!ref'] = 'A1:C33';
         XLSX.utils.book_append_sheet(wb, wsQuote, 'Quote Summary');
 
 
@@ -130,7 +139,7 @@ export function VaaSExcelExportBtn({ inputs, result }: VaaSExcelExportBtnProps) 
         const maxWeeks = Math.ceil(Math.max(traditionalWeeks, vaasWeeks));
 
         const weeklyData = [];
-        const headerRow = ['Week', 'Traditional Progress (%)', 'VaaS Progress (%)', 'Traditional Cost ($)', 'VaaS Cost ($)'];
+        const headerRow = ['Week', 'Traditional Progress (%)', 'VaaS Progress (%)', 'Traditional Cost ($)', 'VaaS Quote Cost ($)', 'Client Review Cost ($)', 'VaaS Total Cost ($)'];
 
         // Internal cost accrual: no execution burn during hiring lag.
         const executionWeeklyCost = result.internalTeamCost / executionWeeks;
@@ -143,10 +152,13 @@ export function VaaSExcelExportBtn({ inputs, result }: VaaSExcelExportBtnProps) 
             const tradCostCurrent = Math.min(elapsedExecutionWeeks * executionWeeklyCost, result.internalTeamCost);
 
             let vaasCostCurrent = 0;
+            let reviewCostCurrent = 0;
             if (week <= vaasWeeks) {
                 vaasCostCurrent = (week / vaasWeeks) * inputs.vaasQuotePrice;
+                reviewCostCurrent = (week / vaasWeeks) * result.clientReviewCostPerBlock;
             } else {
                 vaasCostCurrent = inputs.vaasQuotePrice;
+                reviewCostCurrent = result.clientReviewCostPerBlock;
             }
 
             weeklyData.push([
@@ -154,13 +166,15 @@ export function VaaSExcelExportBtn({ inputs, result }: VaaSExcelExportBtnProps) 
                 Math.round(tradProgress) + '%',
                 Math.round(vProgress) + '%',
                 Math.round(tradCostCurrent),
-                Math.round(vaasCostCurrent)
+                Math.round(vaasCostCurrent),
+                Math.round(reviewCostCurrent),
+                Math.round(vaasCostCurrent + reviewCostCurrent)
             ]);
         }
 
         const wsSchedule = XLSX.utils.aoa_to_sheet([headerRow, ...weeklyData]);
         wsSchedule['!cols'] = [
-            { wch: 8 }, { wch: 22 }, { wch: 18 }, { wch: 18 }, { wch: 15 }
+            { wch: 8 }, { wch: 22 }, { wch: 18 }, { wch: 18 }, { wch: 18 }, { wch: 18 }, { wch: 18 }
         ];
         XLSX.utils.book_append_sheet(wb, wsSchedule, 'Schedule');
 

@@ -156,7 +156,7 @@ export function ControlsSidebar({ inputs, onInputChange, onReset, sectionVisibil
                                         <span className="text-slate-500">Cost/File:</span>
                                         <span className="text-violet-400 ml-1 font-mono">
                                             ${((CONSTANTS.API_BASE_TOKENS_INPUT * (1 + inputs.avgAgentRetries) / 1_000_000 * CONSTANTS.API_CLAUDE_INPUT_PRICE) +
-                                                (CONSTANTS.API_BASE_TOKENS_OUTPUT * (1 + inputs.avgAgentRetries) / 1_000_000 * CONSTANTS.API_CLAUDE_OUTPUT_PRICE)).toFixed(2)}
+                                                (CONSTANTS.API_BASE_TOKENS_OUTPUT * (1 + inputs.avgAgentRetries) / 1_000_000 * CONSTANTS.API_CLAUDE_OUTPUT_PRICE)).toFixed(1)}
                                         </span>
                                     </div>
                                 </div>
@@ -180,6 +180,15 @@ export function ControlsSidebar({ inputs, onInputChange, onReset, sectionVisibil
                         onChange={(v) => handleSliderChange('aiEfficiencyGain', v)}
                         isDefault={inputs.aiEfficiencyGain === defaults.aiEfficiencyGain}
                         accentColor="yellow"
+                    />
+                    <ControlSlider
+                        icon={<Users size={14} className="text-cyan-400" />}
+                        label="Human Review %"
+                        value={inputs.humanReviewPercent}
+                        config={INPUT_CONFIGS.humanReviewPercent}
+                        onChange={(v) => handleSliderChange('humanReviewPercent', v)}
+                        isDefault={inputs.humanReviewPercent === defaults.humanReviewPercent}
+                        accentColor="cyan"
                     />
                     {inputs.computeMode === 'self-hosted' && (
                         <ControlSlider

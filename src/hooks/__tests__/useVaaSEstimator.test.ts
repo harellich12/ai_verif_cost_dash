@@ -109,4 +109,59 @@ describe('useVaaSEstimator', () => {
         expect(month1.vaasCost).toBeLessThan(result.current.result.vaasCost);
         expect(month2.vaasCost).toBeGreaterThan(month1.vaasCost);
     });
+
+    it('should preserve legacy net behavior when human review percent is zero', () => {
+        const { result } = renderHook(() => useVaaSEstimator());
+
+        act(() => {
+            result.current.updateInput('humanReviewPercent', 0);
+        });
+
+        expect(result.current.result.clientReviewCostPerBlock).toBeCloseTo(0, 5);
+        const internalComparableCost = result.current.result.internalTeamCost + result.current.result.idleCashSaved;
+        const legacyNet = internalComparableCost + result.current.result.businessUpsidePerBlock - result.current.result.vaasCost;
+        expect(result.current.result.netBenefitPerBlock).toBeCloseTo(legacyNet, 5);
+    });
+
+    it('should compute client review cost from saved effort base', () => {
+        const { result } = renderHook(() => useVaaSEstimator());
+
+        const engineerMonthlyCost = VAAS_CONSTANTS.ENGINEER_SALARY_YEARLY / VAAS_CONSTANTS.MONTHS_PER_YEAR;
+        const expected = result.current.result.fteMonthsSaved * engineerMonthlyCost * 0.20; // default review %
+        expect(result.current.result.clientReviewCostPerBlock).toBeCloseTo(expected, 5);
+    });
+
+    it('should reduce annual net benefit by annual client review cost', () => {
+        const { result } = renderHook(() => useVaaSEstimator());
+
+        act(() => {
+            result.current.updateInput('humanReviewPercent', 0);
+        });
+        const netAtZero = result.current.result.projectedAnnualNetBenefit;
+
+        act(() => {
+            result.current.updateInput('humanReviewPercent', 20);
+        });
+        const reviewAnnual = result.current.result.annualClientReviewCost;
+        const netAtTwenty = result.current.result.projectedAnnualNetBenefit;
+
+        expect(netAtZero - netAtTwenty).toBeCloseTo(reviewAnnual, 1);
+    });
+
+    it('should accrue monthly client review cost only during VaaS delivery window', () => {
+        const { result } = renderHook(() => useVaaSEstimator());
+
+        const reviewPerBlock = result.current.result.clientReviewCostPerBlock;
+        const deliveryEndMonth = Math.ceil(result.current.result.vaasDurationMonths);
+        const monthDuringDelivery = result.current.result.monthlyData[Math.min(1, result.current.result.monthlyData.length - 1)];
+        const monthAfterDelivery = result.current.result.monthlyData.find((m) => m.month > deliveryEndMonth);
+        const lastMonth = result.current.result.monthlyData[result.current.result.monthlyData.length - 1];
+
+        expect(monthDuringDelivery.clientReviewCost).toBeGreaterThan(0);
+        expect(monthDuringDelivery.clientReviewCost).toBeLessThanOrEqual(reviewPerBlock);
+        if (monthAfterDelivery) {
+            expect(monthAfterDelivery.clientReviewCost).toBeCloseTo(reviewPerBlock, 1);
+        }
+        expect(lastMonth.clientReviewCost).toBeCloseTo(reviewPerBlock, 1);
+    });
 });

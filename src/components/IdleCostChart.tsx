@@ -29,7 +29,7 @@ export function IdleCostChart({ result }: IdleCostChartProps) {
     // Calculate cost breakdown
     const internalActiveCost = result.internalTeamCost;
     const internalIdleCost = result.idleCashSaved;
-    const vaasCost = result.vaasCost;
+    const vaasCost = result.vaasCost + result.clientReviewCostPerBlock;
 
     // Data for stacked bar chart
     const data = [
@@ -150,6 +150,9 @@ export function IdleCostChart({ result }: IdleCostChartProps) {
                         {formatCurrency(idleTaxSavings)}
                     </div>
                 </div>
+            </div>
+            <div className="mt-2 text-xs text-slate-500">
+                VaaS bar includes client-side human review cost.
             </div>
         </div>
     );
