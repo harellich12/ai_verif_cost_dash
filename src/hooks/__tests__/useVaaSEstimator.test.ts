@@ -59,6 +59,20 @@ describe('useVaaSEstimator', () => {
         expect(result.current.result.monthsSaved).toBe(7);
     });
 
+    it('should use custom block size months when complexity is custom', () => {
+        const { result } = renderHook(() => useVaaSEstimator());
+
+        act(() => {
+            result.current.updateInput('blockComplexity', 'custom');
+            result.current.updateInput('customBlockDurationMonths', 10);
+        });
+
+        expect(result.current.result.traditionalDurationMonths).toBe(10);
+        expect(result.current.result.vaasDurationMonths).toBe(5);
+        // 10 months + 1 month hiring lag - 5 months VaaS
+        expect(result.current.result.monthsSaved).toBe(6);
+    });
+
     it('should calculate projected annual efficiency', () => {
         const { result } = renderHook(() => useVaaSEstimator());
 
@@ -163,5 +177,23 @@ describe('useVaaSEstimator', () => {
             expect(monthAfterDelivery.clientReviewCost).toBeCloseTo(reviewPerBlock, 1);
         }
         expect(lastMonth.clientReviewCost).toBeCloseTo(reviewPerBlock, 1);
+    });
+
+    it('should compute sales external-cost metrics and monthly sales data', () => {
+        const { result } = renderHook(() => useVaaSEstimator());
+
+        const expectedPerBlock = result.current.result.internalTeamCost + result.current.result.idleCashSaved;
+        expect(result.current.result.salesExternalCostPerBlock).toBeCloseTo(expectedPerBlock, 5);
+        expect(result.current.result.salesExternalCostAnnual).toBeCloseTo(expectedPerBlock * result.current.inputs.annualBlockCount, 5);
+        expect(result.current.result.salesDelayCostPerBlock).toBeCloseTo(result.current.result.costOfRtlDelay, 5);
+        expect(result.current.result.salesIdleCostPerBlock).toBeCloseTo(result.current.result.idleCashSaved, 5);
+        expect(result.current.result.salesActiveCostPerBlock).toBeCloseTo(result.current.result.internalTeamCost, 5);
+
+        const firstSalesMonth = result.current.result.salesMonthlyData[0];
+        const firstRegularMonth = result.current.result.monthlyData[0];
+        expect(firstSalesMonth.progress).toBeCloseTo(firstRegularMonth.traditionalProgress, 5);
+        expect(firstSalesMonth.activeCost).toBeCloseTo(firstRegularMonth.traditionalCost, 5);
+        expect(firstSalesMonth.idleCost).toBeCloseTo(firstRegularMonth.idleCost, 5);
+        expect(firstSalesMonth.externalCost).toBeCloseTo(firstRegularMonth.traditionalCost + firstRegularMonth.idleCost, 5);
     });
 });

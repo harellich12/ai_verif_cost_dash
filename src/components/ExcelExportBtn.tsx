@@ -265,13 +265,13 @@ export function ExcelExportBtn({ inputs, result }: ExcelExportBtnProps) {
         <button
             onClick={handleExport}
             className="inline-flex items-center gap-2 px-4 py-2.5 
-                 bg-gradient-to-r from-blue-600 to-blue-500 
-                 hover:from-blue-500 hover:to-blue-400
+                 bg-gradient-to-r from-amber-600 to-amber-500 
+                 hover:from-amber-500 hover:to-amber-400
                  text-white font-medium rounded-lg 
-                 shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40
+                 shadow-lg shadow-amber-500/25 hover:shadow-amber-500/40
                  transition-all duration-200 
                  active:scale-95
-                 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:ring-offset-2 focus:ring-offset-slate-900"
+                 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:ring-offset-2 focus:ring-offset-stone-900"
         >
             <Download size={18} className="opacity-90" />
             <span>Export Snapshot (.xlsx)</span>

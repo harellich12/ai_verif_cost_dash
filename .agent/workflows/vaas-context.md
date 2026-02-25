@@ -1,48 +1,69 @@
 ---
-description: 
+description: VaaS-specific context and formulas
 ---
 
-# PRODUCT CONTEXT: VaaS (Verification as a Service) Quote Estimator
-## 1. Product Goal
-Build a Quote & Timeline Estimator to prove that the "Triple Crown Flow" (Human-in-the-Loop AI) is **50% faster** and **more cost-efficient** than traditional internal verification teams.
-**Key Pitch:** "Eliminate Fixed Cost Risk and Launch Early."
+# VaaS PRODUCT CONTEXT
 
-## 2. Tech Stack (Unchanged)
-* React (Vite) + Tailwind CSS (Enterprise Dark Mode)
-* Recharts (for Utilization/Gantt charts)
-* Lucide React (Icons)
-* `xlsx` (SheetJS) for Quote Export
+## 1. Purpose
+Model timeline and cost outcomes for VaaS versus internal verification execution.
 
-## 3. Service Constants (The "New Truth")
-* [cite_start]**Speedup Factor:** 50% (The VaaS flow cuts duration in half)[cite: 7, 96].
-* [cite_start]**Traditional Duration Baseline:** 	
-    * Small Block: 4 Months
-    * [cite_start]Medium Block: 7 Months[cite: 33].
-    * Large Block: 12 Months
-* **Cost Model:**
-    * [cite_start]**Internal Team:** 100% Fixed Cost (Salaries paid even during idle/wait time)[cite: 118].
-    * [cite_start]**VaaS Team:** Variable Cost (Pay only for active execution; No minimums)[cite: 118].
-* **Cloud Infrastructure:**
-    * [cite_start]**Compute:** Standard VM (8-core CPU, 32GB RAM) - No H100s required[cite: 141, 142].
-    * [cite_start]**LLM Ops:** Azure OpenAI / AWS Anthropic (Pass-through cost or included)[cite: 149, 150].
+## 2. Inputs
+- Block sizing:
+  - `blockComplexity` in `small|medium|large|custom`
+  - `customBlockDurationMonths` when `custom`
+- Team and delay:
+  - `internalTeamSize`
+  - `hiringLagMonths`
+  - `estRtlDelayWeeks`
+- Economics:
+  - `vaasQuotePrice`
+  - `annualBlockCount`
+  - `parallelBlocks`
+  - `marketUpsidePerMonth`
+  - `humanReviewPercent`
+- Optional benchmark:
+  - `isBenchmarkMode`
+  - `benchmarkInternalDays`
+  - `benchmarkVaasDays`
 
-## 4. The Math Model
-* **Time-to-Revenue:**
-    * `Weeks_Saved` = `Traditional_Timeline` - `VaaS_Timeline` (where VaaS is 50% of Traditional).
-    * `Revenue_Impact` = `Weeks_Saved` * `Weekly_Revenue_Value`.
-* **Utilization / Idle Tax:**
-    * `Internal_Cost` = `Team_Size` * `Salary` * `Duration` (Includes Idle Time).
-    * `VaaS_Cost` = `Quote_Price` (Fixed scope, no idle billing).
+## 3. Core Formulas
+- Traditional duration:
+  - preset: `BLOCK_DURATIONS[blockComplexity]`
+  - custom: `customBlockDurationMonths`
+- VaaS duration:
+  - default: `traditionalDurationMonths * SPEEDUP_FACTOR`
+  - benchmark: `traditionalDurationMonths * (benchmarkVaasDays / benchmarkInternalDays)`
+- Internal total duration:
+  - `traditionalDurationMonths + hiringLagMonths`
+- Delay exclusivity:
+  - if `hiringLagMonths > 0` then `effectiveDelayWeeks = 0`
+- Internal team cost:
+  - `baseInternalTeamCost + costOfRtlDelay`
+- Idle cash saved:
+  - `baseInternalTeamCost * 0.30`
+- Net benefit per block:
+  - `(internalTeamCost + idleCashSaved + businessUpsidePerBlock) - vaasQuotePrice - clientReviewCostPerBlock`
 
-## 5. UI Layout Strategy
-* **Sidebar:** "Project Scoper" (Block Complexity, Team Size, Revenue Value).
-* **Main View:**
-    * **Top Row:** Big Metrics ("Months Saved", "Revenue Gained", "Idle Cash Saved").
-    * **Middle Row:**
-        * Left: **Utilization Chart** (Stacked Bar: Active vs. Idle Cost).
-        * Right: **Timeline Comparison** (Gantt: Traditional vs. VaaS).
-    * **Bottom Row:** "Security Scorecard" (Compliance Toggles)  + "Benchmark Extrapolator".
+## 4. Sales Mode Metrics
+Sales mode is display-only framing over existing VaaS calculations:
+- `salesExternalCostPerBlock = internalTeamCost + idleCashSaved`
+- `salesExternalCostAnnual = salesExternalCostPerBlock * annualBlockCount`
+- `salesDelayCostPerBlock = costOfRtlDelay`
+- `salesIdleCostPerBlock = idleCashSaved`
+- `salesActiveCostPerBlock = internalTeamCost`
+- `salesMonthlyData`:
+  - `externalCost = traditionalCost + idleCost`
+  - `activeCost = traditionalCost`
+  - `idleCost = idleCost`
+  - `progress = traditionalProgress`
 
-## 6. Excel Export Schema
-* **Sheet 1 (Quote Summary):** Breakdown of Block Size, Est. Duration, and Net Savings.
-* **Sheet 2 (Timeline):** Week-by-week comparison of milestones.
+## 5. UI Expectations
+- Keep VaaS layout sections in Sales view
+- Remap labels/values to external/traditional cost framing
+- Timeline chart in Sales mode emphasizes traditional path
+- Idle cost chart in Sales mode removes VaaS bar
+
+## 6. Exports
+- VaaS Excel supports view-based branching:
+  - `Admin/Presentation`: quote summary + full comparison schedule
+  - `Sales`: external-cost summary + traditional/external schedule only

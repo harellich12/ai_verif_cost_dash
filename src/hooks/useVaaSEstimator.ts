@@ -5,6 +5,7 @@ import {
     VaaSInputs,
     VaaSResult,
     VaaSMonthlyData,
+    VaaSSalesMonthlyData,
     getDefaultVaaSInputs,
 } from '../vaasConstants';
 
@@ -65,6 +66,7 @@ export function useVaaSEstimator(): UseVaaSEstimatorReturn {
     const result = useMemo((): VaaSResult => {
         const {
             blockComplexity,
+            customBlockDurationMonths,
             internalTeamSize,
             estRtlDelayWeeks,
             vaasQuotePrice,
@@ -75,7 +77,9 @@ export function useVaaSEstimator(): UseVaaSEstimatorReturn {
         } = inputs;
 
         // === Timeline Calculation ===
-        const traditionalDurationMonths = VAAS_CONSTANTS.BLOCK_DURATIONS[blockComplexity];
+        const traditionalDurationMonths = blockComplexity === 'custom'
+            ? customBlockDurationMonths
+            : VAAS_CONSTANTS.BLOCK_DURATIONS[blockComplexity];
 
         // Benchmark Mode Logic
         let speedupFactor = VAAS_CONSTANTS.SPEEDUP_FACTOR;
@@ -158,6 +162,7 @@ export function useVaaSEstimator(): UseVaaSEstimatorReturn {
         // === Monthly Breakdown (Timeline Projection) ===
         const maxMonths = Math.ceil(Math.max(internalTotalDuration, vaasDurationMonths));
         const monthlyData: VaaSMonthlyData[] = [];
+        const salesMonthlyData: VaaSSalesMonthlyData[] = [];
 
         for (let month = 1; month <= maxMonths; month++) {
             // Traditional starts after internal hiring lag.
@@ -195,6 +200,14 @@ export function useVaaSEstimator(): UseVaaSEstimatorReturn {
                 clientReviewCost: reviewCostAccrued,
                 idleCost,
             });
+
+            salesMonthlyData.push({
+                month,
+                externalCost: traditionalCost + idleCost,
+                activeCost: traditionalCost,
+                idleCost,
+                progress: traditionalProgress,
+            });
         }
 
         // === Projected Annual Efficiency ===
@@ -203,6 +216,11 @@ export function useVaaSEstimator(): UseVaaSEstimatorReturn {
         const projectedAnnualEfficiency = totalCashBurnPrevented * annualBlockCount;
         const projectedAnnualTimeSaved = (monthsSaved * annualBlockCount) / Math.max(1, parallelBlocks);
         const projectedAnnualNetBenefit = netBenefitPerBlock * annualBlockCount;
+        const salesExternalCostPerBlock = internalTeamCost + idleCashSaved;
+        const salesExternalCostAnnual = salesExternalCostPerBlock * annualBlockCount;
+        const salesDelayCostPerBlock = costOfRtlDelay;
+        const salesIdleCostPerBlock = idleCashSaved;
+        const salesActiveCostPerBlock = internalTeamCost;
 
         return {
             traditionalDurationMonths,
@@ -220,9 +238,15 @@ export function useVaaSEstimator(): UseVaaSEstimatorReturn {
             annualClientReviewCost,
             netBenefitPerBlock,
             monthlyData,
+            salesMonthlyData,
             projectedAnnualEfficiency,
             projectedAnnualTimeSaved,
             projectedAnnualNetBenefit,
+            salesExternalCostPerBlock,
+            salesExternalCostAnnual,
+            salesDelayCostPerBlock,
+            salesIdleCostPerBlock,
+            salesActiveCostPerBlock,
             isBenchmarkMode: inputs.isBenchmarkMode,
             provenSpeedupRatio,
             internalStartOffset,

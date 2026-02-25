@@ -32,32 +32,32 @@ export function ResultChart({ result, inputs }: ResultChartProps) {
 
     return (
         <div className="card p-6">
-            <h3 className="text-lg font-semibold text-slate-100 mb-4">12-Month Cash Flow Projection</h3>
+            <h3 className="text-lg font-semibold text-stone-100 mb-4">12-Month Cash Flow Projection</h3>
             <div className="h-80">
                 <ResponsiveContainer width="100%" height="100%">
                     <LineChart
                         data={data}
                         margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
                     >
-                        <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
+                        <CartesianGrid strokeDasharray="3 3" stroke="#3a3122" />
                         <XAxis
                             dataKey="name"
-                            stroke="#94a3b8"
-                            tick={{ fill: '#94a3b8', fontSize: 12 }}
+                            stroke="#bfa06a"
+                            tick={{ fill: '#bfa06a', fontSize: 12 }}
                         />
                         <YAxis
-                            stroke="#94a3b8"
-                            tick={{ fill: '#94a3b8', fontSize: 12 }}
+                            stroke="#bfa06a"
+                            tick={{ fill: '#bfa06a', fontSize: 12 }}
                             tickFormatter={(value) => formatCurrency(value, true)}
                         />
                         <Tooltip
                             contentStyle={{
-                                backgroundColor: '#1e293b',
-                                border: '1px solid #334155',
+                                backgroundColor: '#11100d',
+                                border: '1px solid #4b3f2a',
                                 borderRadius: '8px',
                                 boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.3)',
                             }}
-                            labelStyle={{ color: '#f1f5f9' }}
+                            labelStyle={{ color: '#f8e7bf' }}
                             formatter={(value: number, name: string) => {
                                 let label = name;
                                 if (name === 'Cumulative GPU Cost' && inputs.computeMode === 'self-hosted' && inputs.deploymentStrategy !== 'cloud' && inputs.includeTaxDepreciation) {
@@ -68,9 +68,9 @@ export function ResultChart({ result, inputs }: ResultChartProps) {
                         />
                         <Legend
                             wrapperStyle={{ paddingTop: '20px' }}
-                            formatter={(value) => <span style={{ color: '#94a3b8' }}>{value}</span>}
+                            formatter={(value) => <span style={{ color: '#bfa06a' }}>{value}</span>}
                         />
-                        <ReferenceLine y={0} stroke="#64748b" strokeDasharray="3 3" />
+                        <ReferenceLine y={0} stroke="#5a4b31" strokeDasharray="3 3" />
 
                         {/* Break-even reference line */}
                         {result.breakEvenMonth && (
@@ -90,18 +90,18 @@ export function ResultChart({ result, inputs }: ResultChartProps) {
                         <Line
                             type="monotone"
                             dataKey={costSeriesLabel}
-                            stroke="#ef4444"
+                            stroke="#f97316"
                             strokeWidth={2}
-                            dot={{ fill: '#ef4444', strokeWidth: 0, r: 4 }}
-                            activeDot={{ r: 6, fill: '#ef4444' }}
+                            dot={{ fill: '#f97316', strokeWidth: 0, r: 4 }}
+                            activeDot={{ r: 6, fill: '#f97316' }}
                         />
                         <Line
                             type="monotone"
                             dataKey="Cumulative Savings"
-                            stroke="#22c55e"
+                            stroke="#d4a93a"
                             strokeWidth={2}
-                            dot={{ fill: '#22c55e', strokeWidth: 0, r: 4 }}
-                            activeDot={{ r: 6, fill: '#22c55e' }}
+                            dot={{ fill: '#d4a93a', strokeWidth: 0, r: 4 }}
+                            activeDot={{ r: 6, fill: '#d4a93a' }}
                         />
                     </LineChart>
                 </ResponsiveContainer>
