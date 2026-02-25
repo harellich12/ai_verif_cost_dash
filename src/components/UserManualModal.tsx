@@ -7,7 +7,7 @@ interface UserManualModalProps {
     onClose: () => void;
 }
 
-type ManualTab = 'guide' | 'vaas-math';
+type ManualTab = 'guide' | 'vaas-quant' | 'vaas-math';
 
 export function UserManualModal({ isOpen, onClose }: UserManualModalProps) {
     const [activeTab, setActiveTab] = useState<ManualTab>('guide');
@@ -50,7 +50,7 @@ export function UserManualModal({ isOpen, onClose }: UserManualModalProps) {
                 </div>
 
                 <div className="px-6 pt-4 border-b border-stone-700 bg-stone-900/60">
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 flex-wrap">
                         <button
                             onClick={() => setActiveTab('guide')}
                             className={`px-3 py-1.5 text-sm rounded-lg border transition-colors ${activeTab === 'guide'
@@ -59,6 +59,15 @@ export function UserManualModal({ isOpen, onClose }: UserManualModalProps) {
                                 }`}
                         >
                             User Guide
+                        </button>
+                        <button
+                            onClick={() => setActiveTab('vaas-quant')}
+                            className={`px-3 py-1.5 text-sm rounded-lg border transition-colors ${activeTab === 'vaas-quant'
+                                ? 'bg-amber-600/20 border-amber-500/50 text-amber-300'
+                                : 'bg-stone-800 border-stone-700 text-stone-300 hover:bg-stone-700'
+                                }`}
+                        >
+                            How VaaS Is Quantified
                         </button>
                         <button
                             onClick={() => setActiveTab('vaas-math')}
@@ -167,6 +176,91 @@ export function UserManualModal({ isOpen, onClose }: UserManualModalProps) {
                             <h3 className="text-lg font-semibold text-white">6. Notes</h3>
                             <p>All outputs are planning estimates and should be validated with pilot data and finance review.</p>
                             <p>Assumptions are configurable; model quality depends on assumption quality.</p>
+                        </section>
+                    </div>
+                )}
+
+                {activeTab === 'vaas-quant' && (
+                    <div className="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-6 text-stone-300">
+                        <div className="bg-stone-800/40 border border-stone-700 rounded-xl p-4">
+                            <h3 className="text-lg font-semibold text-amber-300">How VaaS Results Are Quantified</h3>
+                            <p className="text-sm text-stone-400 mt-1">
+                                High-level explanation for client conversations. This is intentionally simplified.
+                            </p>
+                        </div>
+
+                        <section className="space-y-3 text-sm">
+                            <h4 className="text-stone-100 font-semibold">1) Build the two timelines</h4>
+                            <div className="bg-stone-800/30 border border-stone-700/50 rounded-lg p-4 space-y-2">
+                                <p>Internal timeline is based on block duration, plus hiring lag when present.</p>
+                                <p>VaaS timeline is a faster version of the same block (default speedup, or benchmark-based speedup).</p>
+                                <p><strong>Time saved</strong> is the difference between internal completion and VaaS completion.</p>
+                                <code className="block bg-stone-950 p-2 rounded text-xs font-mono text-amber-400">
+                                    Internal Total (mo) = Internal Duration + Hiring Lag
+                                    <br />
+                                    VaaS Duration (mo) = Internal Duration x Speedup Factor
+                                    <br />
+                                    Months Saved = Internal Total - VaaS Duration
+                                </code>
+                            </div>
+                        </section>
+
+                        <section className="space-y-3 text-sm">
+                            <h4 className="text-stone-100 font-semibold">2) Convert time into usable capacity</h4>
+                            <div className="bg-stone-800/30 border border-stone-700/50 rounded-lg p-4 space-y-2">
+                                <p>Saved time across the internal team is expressed as <strong>capacity unlocked (FTE-months)</strong>.</p>
+                                <p>This represents engineering bandwidth that can move to other roadmap work.</p>
+                                <code className="block bg-stone-950 p-2 rounded text-xs font-mono text-amber-400">
+                                    Capacity Unlocked (FTE-mo) = Months Saved x Internal Team Size
+                                </code>
+                            </div>
+                        </section>
+
+                        <section className="space-y-3 text-sm">
+                            <h4 className="text-stone-100 font-semibold">3) Estimate internal comparable cost</h4>
+                            <div className="bg-stone-800/30 border border-stone-700/50 rounded-lg p-4 space-y-2">
+                                <p>Internal execution cost is based on team size, engineer cost, and internal duration.</p>
+                                <p>Delay logic is non-stacked: hiring lag and RTL delay are treated as mutually exclusive in cost terms.</p>
+                                <p>Model also adds idle/wait inefficiency as a fixed internal waste component.</p>
+                                <code className="block bg-stone-950 p-2 rounded text-xs font-mono text-amber-400">
+                                    Base Internal Cost = Team Size x Engineer Cost/Mo x Internal Duration
+                                    <br />
+                                    Internal Team Cost = Base Internal Cost + Delay Cost
+                                    <br />
+                                    Idle Cost = Base Internal Cost x Idle Fraction
+                                </code>
+                            </div>
+                        </section>
+
+                        <section className="space-y-3 text-sm">
+                            <h4 className="text-stone-100 font-semibold">4) Estimate VaaS-side cost and optional upside</h4>
+                            <div className="bg-stone-800/30 border border-stone-700/50 rounded-lg p-4 space-y-2">
+                                <p>VaaS cost starts with the fixed quote.</p>
+                                <p>Client-side review effort is added via <strong>Human Review %</strong> on saved effort.</p>
+                                <p>Optional market upside converts time saved into business value.</p>
+                                <code className="block bg-stone-950 p-2 rounded text-xs font-mono text-amber-400">
+                                    Review Cost/Block = Capacity Unlocked x Engineer Cost/Mo x Human Review %
+                                    <br />
+                                    Business Upside/Block = Months Saved x Market Upside per Month
+                                    <br />
+                                    VaaS Total Comparable Outflow = VaaS Quote + Review Cost/Block
+                                </code>
+                            </div>
+                        </section>
+
+                        <section className="space-y-3 text-sm">
+                            <h4 className="text-stone-100 font-semibold">5) Compute net value</h4>
+                            <div className="bg-stone-800/30 border border-stone-700/50 rounded-lg p-4 space-y-2">
+                                <p><strong>Net Benefit / Block</strong> compares internal comparable cost (plus optional upside) against VaaS quote and review burden.</p>
+                                <p>Annual outputs scale by annual block count; parallel blocks only adjust calendar-time interpretation.</p>
+                                <code className="block bg-stone-950 p-2 rounded text-xs font-mono text-amber-400">
+                                    Net Benefit/Block = (Internal Team Cost + Idle Cost + Business Upside) - (VaaS Quote + Review Cost)
+                                    <br />
+                                    Annual Net Benefit = Net Benefit/Block x Annual Block Count
+                                    <br />
+                                    Annual Time Saved (mo) = (Months Saved x Annual Block Count) / Parallel Blocks
+                                </code>
+                            </div>
                         </section>
                     </div>
                 )}
