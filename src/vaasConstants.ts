@@ -33,7 +33,7 @@ export const VAAS_CONSTANTS = {
 } as const;
 
 // Block Complexity Enum
-export type BlockComplexity = 'small' | 'medium' | 'large';
+export type BlockComplexity = 'small' | 'medium' | 'large' | 'custom';
 
 // VaaS Input Configuration
 export interface VaaSInputConfig {
@@ -119,12 +119,22 @@ export const VAAS_INPUT_CONFIGS: Record<string, VaaSInputConfig> = {
         unit: 'months',
         tooltip: 'Time required to recruit, hire, and onboard the internal team before productive work begins.',
     },
+    customBlockDurationMonths: {
+        label: 'Custom Block Size',
+        min: 1,
+        max: 36,
+        step: 0.5,
+        default: 7,
+        unit: 'months',
+        tooltip: 'Manual block duration used when Block Size is set to Custom.',
+    },
 } as const;
 
 // VaaS Inputs Interface
 export interface VaaSInputs {
     blockType: string;
     blockComplexity: BlockComplexity;
+    customBlockDurationMonths: number;
     internalTeamSize: number;
     estRtlDelayWeeks: number; // Replaces monthlyRevenueValue
     vaasQuotePrice: number;
@@ -147,6 +157,14 @@ export interface VaaSMonthlyData {
     vaasCost: number;             // Cumulative VaaS cost
     clientReviewCost: number;     // Cumulative client-side review cost
     idleCost: number;             // Idle time cost (internal only)
+}
+
+export interface VaaSSalesMonthlyData {
+    month: number;
+    externalCost: number;
+    activeCost: number;
+    idleCost: number;
+    progress: number;
 }
 
 // VaaS Calculation Result
@@ -173,6 +191,14 @@ export interface VaaSResult {
 
     // Monthly Breakdown
     monthlyData: VaaSMonthlyData[];
+    salesMonthlyData: VaaSSalesMonthlyData[];
+
+    // Sales View Metrics (External/Traditional cost framing)
+    salesExternalCostPerBlock: number;
+    salesExternalCostAnnual: number;
+    salesDelayCostPerBlock: number;
+    salesIdleCostPerBlock: number;
+    salesActiveCostPerBlock: number;
 
     // Efficiency Projection
     projectedAnnualEfficiency: number;  // Savings × annual block count
@@ -190,6 +216,7 @@ export function getDefaultVaaSInputs(): VaaSInputs {
     return {
         blockType: VAAS_CONSTANTS.BLOCK_TYPES[0],
         blockComplexity: 'medium',
+        customBlockDurationMonths: VAAS_INPUT_CONFIGS.customBlockDurationMonths.default,
         internalTeamSize: VAAS_INPUT_CONFIGS.internalTeamSize.default,
         estRtlDelayWeeks: VAAS_INPUT_CONFIGS.estRtlDelayWeeks.default,
         vaasQuotePrice: VAAS_INPUT_CONFIGS.vaasQuotePrice.default,

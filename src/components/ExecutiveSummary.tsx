@@ -96,25 +96,25 @@ export function ExecutiveSummary({ inputs, result }: ExecutiveSummaryProps) {
 
     return (
         <div className={`rounded-2xl overflow-hidden transition-all duration-300 ${recommendation.isPositive
-            ? 'bg-gradient-to-br from-emerald-900/40 via-emerald-900/20 to-slate-900/80 ring-1 ring-emerald-500/30'
-            : 'bg-gradient-to-br from-amber-900/40 via-amber-900/20 to-slate-900/80 ring-1 ring-amber-500/30'
+            ? 'bg-gradient-to-br from-amber-900/40 via-amber-900/20 to-stone-900/80 ring-1 ring-amber-500/30'
+            : 'bg-gradient-to-br from-amber-900/40 via-amber-900/20 to-stone-900/80 ring-1 ring-amber-500/30'
             }`}>
             {/* Header */}
-            <div className={`px-6 py-4 border-b ${recommendation.isPositive ? 'border-emerald-500/20' : 'border-amber-500/20'
+            <div className={`px-6 py-4 border-b ${recommendation.isPositive ? 'border-amber-500/20' : 'border-amber-500/20'
                 }`}>
                 <div className="flex items-center gap-3">
                     <div className={`p-2.5 rounded-xl ${recommendation.isPositive
-                        ? 'bg-emerald-500/20 ring-1 ring-emerald-500/30'
+                        ? 'bg-amber-500/20 ring-1 ring-amber-500/30'
                         : 'bg-amber-500/20 ring-1 ring-amber-500/30'
                         }`}>
                         {recommendation.isPositive
-                            ? <TrendingUp className="w-5 h-5 text-emerald-400" />
+                            ? <TrendingUp className="w-5 h-5 text-amber-400" />
                             : <AlertTriangle className="w-5 h-5 text-amber-400" />
                         }
                     </div>
                     <div>
-                        <p className="text-xs text-slate-400 uppercase tracking-wider mb-0.5">Executive Recommendation</p>
-                        <h3 className={`text-lg font-semibold ${recommendation.isPositive ? 'text-emerald-300' : 'text-amber-300'
+                        <p className="text-xs text-stone-400 uppercase tracking-wider mb-0.5">Executive Recommendation</p>
+                        <h3 className={`text-lg font-semibold ${recommendation.isPositive ? 'text-amber-300' : 'text-amber-300'
                             }`}>
                             {recommendation.headline}
                         </h3>
@@ -124,22 +124,22 @@ export function ExecutiveSummary({ inputs, result }: ExecutiveSummaryProps) {
 
             {/* Body */}
             <div className="px-6 py-5">
-                <p className="text-slate-300 leading-relaxed mb-5">
+                <p className="text-stone-300 leading-relaxed mb-5">
                     {recommendation.body}
                 </p>
 
                 {/* Key Insights */}
                 <div className="space-y-2">
                     <div className="flex items-center gap-2 mb-3">
-                        <Lightbulb className="w-4 h-4 text-slate-400" />
-                        <span className="text-xs font-medium text-slate-400 uppercase tracking-wide">Key Insights</span>
+                        <Lightbulb className="w-4 h-4 text-stone-400" />
+                        <span className="text-xs font-medium text-stone-400 uppercase tracking-wide">Key Insights</span>
                     </div>
                     {recommendation.suggestions.map((suggestion, index) => (
                         <div
                             key={index}
-                            className="flex items-start gap-2 text-sm text-slate-400 hover:text-slate-300 transition-colors"
+                            className="flex items-start gap-2 text-sm text-stone-400 hover:text-stone-300 transition-colors"
                         >
-                            <ArrowRight className={`w-4 h-4 mt-0.5 flex-shrink-0 ${recommendation.isPositive ? 'text-emerald-500/60' : 'text-amber-500/60'
+                            <ArrowRight className={`w-4 h-4 mt-0.5 flex-shrink-0 ${recommendation.isPositive ? 'text-amber-500/60' : 'text-amber-500/60'
                                 }`} />
                             <span>{suggestion}</span>
                         </div>
@@ -148,14 +148,14 @@ export function ExecutiveSummary({ inputs, result }: ExecutiveSummaryProps) {
             </div>
 
             {/* Footer Badge */}
-            <div className={`px-6 py-3 border-t ${recommendation.isPositive ? 'border-emerald-500/20 bg-emerald-950/30' : 'border-amber-500/20 bg-amber-950/30'
+            <div className={`px-6 py-3 border-t ${recommendation.isPositive ? 'border-amber-500/20 bg-amber-950/30' : 'border-amber-500/20 bg-amber-950/30'
                 }`}>
                 <div className="flex items-center justify-between">
-                    <span className="text-xs text-slate-500">
+                    <span className="text-xs text-stone-500">
                         Based on {inputs.numEngineers} engineers, {inputs.computeMode === 'self-hosted' ? `${inputs.numGPUs} GPUs` : `${inputs.interactiveJobsPerDay} jobs/day + ${inputs.regressionRunsPerNight} regressions`}, {inputs.aiEfficiencyGain}% efficiency gain
                     </span>
                     <span className={`text-xs font-medium px-2 py-1 rounded-full ${recommendation.isPositive
-                        ? 'bg-emerald-500/20 text-emerald-400'
+                        ? 'bg-amber-500/20 text-amber-400'
                         : 'bg-amber-500/20 text-amber-400'
                         }`}>
                         {recommendation.isPositive ? '✓ Recommended' : '⚠ Review Required'}

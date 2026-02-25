@@ -12,6 +12,7 @@ import { VaaSResult } from '../vaasConstants';
 
 interface IdleCostChartProps {
     result: VaaSResult;
+    viewMode?: 'admin' | 'presentation' | 'sales';
 }
 
 // Format currency for display
@@ -25,7 +26,8 @@ function formatCurrency(value: number): string {
     return `$${value.toFixed(0)}`;
 }
 
-export function IdleCostChart({ result }: IdleCostChartProps) {
+export function IdleCostChart({ result, viewMode = 'admin' }: IdleCostChartProps) {
+    const isSales = viewMode === 'sales';
     // Calculate cost breakdown
     const internalActiveCost = result.internalTeamCost;
     const internalIdleCost = result.idleCashSaved;
@@ -39,31 +41,33 @@ export function IdleCostChart({ result }: IdleCostChartProps) {
             idleCost: internalIdleCost,
             total: result.internalTeamCost + result.idleCashSaved,
         },
-        {
-            name: 'VaaS',
-            activeCost: vaasCost,
-            idleCost: 0,
-            total: vaasCost,
-        },
+        ...(isSales
+            ? []
+            : [{
+                name: 'VaaS',
+                activeCost: vaasCost,
+                idleCost: 0,
+                total: vaasCost,
+            }]),
     ];
 
     const maxCost = Math.max(result.internalTeamCost + result.idleCashSaved, vaasCost);
     const idleTaxSavings = internalIdleCost;
 
     return (
-        <div className="bg-slate-800/50 rounded-xl p-6 border border-slate-700/50">
+        <div className="bg-stone-800/50 rounded-xl p-6 border border-stone-700/50">
             <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-slate-200">
-                    Cost Utilization Comparison
+                <h3 className="text-lg font-semibold text-stone-200">
+                    {isSales ? 'External Cost Breakdown' : 'Cost Utilization Comparison'}
                 </h3>
                 <div className="flex items-center gap-4 text-xs">
                     <div className="flex items-center gap-1.5">
-                        <div className="w-3 h-3 rounded bg-emerald-500" />
-                        <span className="text-slate-400">Active Cost</span>
+                        <div className="w-3 h-3 rounded bg-amber-500" />
+                        <span className="text-stone-400">Active Cost</span>
                     </div>
                     <div className="flex items-center gap-1.5">
-                        <div className="w-3 h-3 rounded bg-red-500/60" />
-                        <span className="text-slate-400">Idle Cost</span>
+                        <div className="w-3 h-3 rounded bg-amber-700/70" />
+                        <span className="text-stone-400">Idle Cost</span>
                     </div>
                 </div>
             </div>
@@ -79,13 +83,13 @@ export function IdleCostChart({ result }: IdleCostChartProps) {
                             type="number"
                             domain={[0, maxCost * 1.1]}
                             tickFormatter={(value) => formatCurrency(value)}
-                            stroke="#64748b"
+                            stroke="#bfa06a"
                             fontSize={12}
                         />
                         <YAxis
                             type="category"
                             dataKey="name"
-                            stroke="#64748b"
+                            stroke="#bfa06a"
                             fontSize={12}
                             width={100}
                         />
@@ -95,30 +99,30 @@ export function IdleCostChart({ result }: IdleCostChartProps) {
                                 name === 'activeCost' ? 'Active Cost' : 'Idle Cost',
                             ]}
                             contentStyle={{
-                                backgroundColor: '#1e293b',
-                                border: '1px solid #334155',
+                                backgroundColor: '#11100d',
+                                border: '1px solid #4b3f2a',
                                 borderRadius: '8px',
                             }}
-                            labelStyle={{ color: '#f1f5f9' }}
-                            cursor={{ fill: '#334155', opacity: 0.2 }}
+                            labelStyle={{ color: '#f8e7bf' }}
+                            cursor={{ fill: '#3a3122', opacity: 0.2 }}
                         />
                         <Bar
                             dataKey="activeCost"
                             stackId="a"
-                            fill="#10b981"
+                            fill="#d4a93a"
                             radius={[0, 0, 0, 0]}
                         >
                             {data.map((_entry, index) => (
                                 <Cell
                                     key={`active-${index}`}
-                                    fill={index === 0 ? '#10b981' : '#8b5cf6'}
+                                    fill={index === 0 ? '#d4a93a' : '#f59e0b'}
                                 />
                             ))}
                         </Bar>
                         <Bar
                             dataKey="idleCost"
                             stackId="a"
-                            fill="#ef4444"
+                            fill="#9a6a1f"
                             radius={[0, 4, 4, 0]}
                         >
                             <LabelList
@@ -127,7 +131,7 @@ export function IdleCostChart({ result }: IdleCostChartProps) {
                                 formatter={(value: number) =>
                                     value > 0 ? `Idle: ${formatCurrency(value)}` : ''
                                 }
-                                fill="#f87171"
+                                fill="#eab308"
                                 fontSize={11}
                             />
                         </Bar>
@@ -135,25 +139,29 @@ export function IdleCostChart({ result }: IdleCostChartProps) {
                 </ResponsiveContainer>
             </div>
 
-            {/* Idle Tax Avoidance Callout */}
-            <div className="mt-4 p-3 bg-gradient-to-r from-red-500/10 to-transparent border-l-4 border-red-500 rounded-r-lg">
+            {/* Idle Time Cost Callout */}
+            <div className="mt-4 p-3 bg-gradient-to-r from-amber-700/20 to-transparent border-l-4 border-amber-500 rounded-r-lg">
                 <div className="flex items-center justify-between">
                     <div>
-                        <div className="text-sm font-medium text-red-400">
-                            Idle Tax Avoidance
+                        <div className="text-sm font-medium text-amber-400">
+                            Idle Time Cost
                         </div>
-                        <div className="text-xs text-slate-400 mt-0.5">
-                            Salary cost during wait/blocked time eliminated with VaaS
+                        <div className="text-xs text-stone-400 mt-0.5">
+                            {isSales
+                                ? 'Salary cost during wait/blocked time in the current verification flow'
+                                : 'Salary cost during wait/blocked time eliminated with VaaS'}
                         </div>
                     </div>
-                    <div className="text-2xl font-bold text-red-400">
+                    <div className="text-2xl font-bold text-amber-400">
                         {formatCurrency(idleTaxSavings)}
                     </div>
                 </div>
             </div>
-            <div className="mt-2 text-xs text-slate-500">
-                VaaS bar includes client-side human review cost.
-            </div>
+            {!isSales && (
+                <div className="mt-2 text-xs text-stone-500">
+                    VaaS bar includes client-side human review cost.
+                </div>
+            )}
         </div>
     );
 }

@@ -44,7 +44,6 @@ Presentation filters are configured from **Presentation Setup** (Admin only) and
   - **Cloud API**: token-based cost path using jobs/runs/retries.
 - **AI Efficiency Gain (%)**: proportion of debug effort improved by AI.
 - **Human Review (%)**: client/engineer oversight applied to AI-generated savings (default 20%).
-- **Engineer Cost Basis**: ROI calculations use `salary + EDA license` (`$200K + $25K` per engineer per year by default).
 - **GPU Utilization (%)**: affects cloud-rental style compute economics.
 - **Bug Escape Probability / Bug Reduction**: risk-value estimation inputs.
 - **Advanced**:
