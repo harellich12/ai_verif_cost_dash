@@ -21,7 +21,7 @@ The header includes a second toggle:
 - **Presentation**: client-facing view based on your saved filters.
 - **Sales**: available in VaaS mode only; external/traditional verification cost framing.
 
-Presentation filters are configured from **Presentation Setup** (Admin only) and persisted in local storage.
+Presentation filters are configured from **Presentation Setup** (Admin only) and persisted in local storage. Sales view mirrors Presentation visibility settings.
 
 ## 3. Navigation and Controls
 - **Header toggles**:
@@ -81,16 +81,15 @@ Tooltips (`?`) next to sliders explain each assumption.
 ### 5.1 Key Inputs
 - **Block Type / Complexity**: baseline internal duration.
   - Includes preset block sizes and a **Custom Block Size** option (manual months via `#`).
+- **Engineer Hourly Rate**: hourly wage used for all internal cost calculations.
 - **Internal Team Size**
 - **Internal Hiring Lag (months)**
-- **Estimated RTL Delay (weeks)**
-  - Modeled as **mutually exclusive** with hiring lag.
-  - If hiring lag > 0, RTL delay cost is not stacked.
+- **Idle Time Factor (%)**: estimated internal inefficiency from waiting/blocked time.
 - **VaaS Quote Price**
 - **Annual Block Count**
 - **Parallel Blocks**: adjusts annual calendar time-saved projection.
 - **Market Upside ($/month)**: optional business upside from faster delivery.
-- **Human Review (%)**: client-side review effort on saved effort (default 20%).
+- **Human Review (%)**: client-side review effort on saved effort (default 50%).
 - **Benchmark Validator (optional)**:
   - Replace default speedup with measured internal vs VaaS benchmark days.
 
@@ -114,7 +113,6 @@ Tooltips (`?`) are available for sliders and key value fields.
   - External Cost / Year
   - Active Verification Cost
   - Idle Time Cost
-  - Delay Cost
   - Traditional timeline emphasis
 
 ### 5.3 VaaS Economics Logic (high level)

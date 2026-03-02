@@ -11,10 +11,12 @@ Model timeline and cost outcomes for VaaS versus internal verification execution
 - Block sizing:
   - `blockComplexity` in `small|medium|large|custom`
   - `customBlockDurationMonths` when `custom`
-- Team and delay:
+- Team and cost:
+  - `engineerHourlyRate`
   - `internalTeamSize`
   - `hiringLagMonths`
-  - `estRtlDelayWeeks`
+- Efficiency:
+  - `idleTimePercent`
 - Economics:
   - `vaasQuotePrice`
   - `annualBlockCount`
@@ -35,12 +37,10 @@ Model timeline and cost outcomes for VaaS versus internal verification execution
   - benchmark: `traditionalDurationMonths * (benchmarkVaasDays / benchmarkInternalDays)`
 - Internal total duration:
   - `traditionalDurationMonths + hiringLagMonths`
-- Delay exclusivity:
-  - if `hiringLagMonths > 0` then `effectiveDelayWeeks = 0`
 - Internal team cost:
-  - `baseInternalTeamCost + costOfRtlDelay`
+  - `baseInternalTeamCost`
 - Idle cash saved:
-  - `baseInternalTeamCost * 0.30`
+  - `baseInternalTeamCost * idleTimePercent`
 - Net benefit per block:
   - `(internalTeamCost + idleCashSaved + businessUpsidePerBlock) - vaasQuotePrice - clientReviewCostPerBlock`
 
@@ -48,7 +48,7 @@ Model timeline and cost outcomes for VaaS versus internal verification execution
 Sales mode is display-only framing over existing VaaS calculations:
 - `salesExternalCostPerBlock = internalTeamCost + idleCashSaved`
 - `salesExternalCostAnnual = salesExternalCostPerBlock * annualBlockCount`
-- `salesDelayCostPerBlock = costOfRtlDelay`
+- `salesDelayCostPerBlock = 0` (RTL delay not modeled)
 - `salesIdleCostPerBlock = idleCashSaved`
 - `salesActiveCostPerBlock = internalTeamCost`
 - `salesMonthlyData`:

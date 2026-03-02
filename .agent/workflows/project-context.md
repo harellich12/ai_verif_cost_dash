@@ -34,7 +34,7 @@ Provide an interactive planning tool for technical and business stakeholders to 
 - Default speedup factor: `0.5` (50% faster)
 - Block durations: `small=4`, `medium=7`, `large=12` months
 - Custom block duration supported (`customBlockDurationMonths`)
-- Hiring lag and RTL delay are mutually exclusive in cost logic
+- Idle time factor is configurable in cost logic
 - HITL review is applied to saved effort base
 
 ## 6. Sales View (VaaS-only) Contract
