@@ -14,6 +14,7 @@ interface VaaSSidebarProps {
     inputs: VaaSInputs;
     onInputChange: <K extends keyof VaaSInputs>(key: K, value: VaaSInputs[K]) => void;
     onReset: () => void;
+    viewMode?: 'admin' | 'presentation' | 'sales';
     sectionVisibility?: {
         blockType?: boolean;
         complexity?: boolean;
@@ -24,7 +25,8 @@ interface VaaSSidebarProps {
     };
 }
 
-export function VaaSSidebar({ inputs, onInputChange, onReset, sectionVisibility }: VaaSSidebarProps) {
+export function VaaSSidebar({ inputs, onInputChange, onReset, viewMode = 'admin', sectionVisibility }: VaaSSidebarProps) {
+    const isSales = viewMode === 'sales';
     const [hourlyRateDraft, setHourlyRateDraft] = useState(() => String(inputs.engineerHourlyRate));
     const hourlyRateConfig = VAAS_INPUT_CONFIGS.engineerHourlyRate;
 
@@ -278,7 +280,7 @@ export function VaaSSidebar({ inputs, onInputChange, onReset, sectionVisibility 
                     </div>
                 )}
 
-                {sectionVisibility?.teamDelay !== false && (
+                {!isSales && sectionVisibility?.teamDelay !== false && (
                     <div className="space-y-2">
                         <div className="flex items-center justify-between">
                             <label className="flex items-center gap-2 text-sm text-stone-400">

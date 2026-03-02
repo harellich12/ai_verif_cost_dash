@@ -307,6 +307,7 @@ function App() {
                     inputs={vaasCalc.inputs}
                     onInputChange={vaasCalc.updateInput}
                     onReset={vaasCalc.resetInputs}
+                    viewMode={viewMode}
                     sectionVisibility={vaasSidebarVisibility}
                 />
             )}
