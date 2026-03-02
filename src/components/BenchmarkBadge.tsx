@@ -37,7 +37,7 @@ export function BenchmarkBadge({
                     <TrendingUp className="w-4 h-4 text-amber-400" />
                 </div>
                 <h3 className="text-sm font-semibold text-stone-200">
-                    {isSales ? 'Projected External Delivery Load' : 'Projected Annual Efficiency'}
+                    {isSales ? 'Annual Verification Workload' : 'Projected Annual Efficiency'}
                 </h3>
             </div>
 

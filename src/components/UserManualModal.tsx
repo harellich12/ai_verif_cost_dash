@@ -7,7 +7,7 @@ interface UserManualModalProps {
     onClose: () => void;
 }
 
-type ManualTab = 'guide' | 'vaas-quant' | 'vaas-math';
+type ManualTab = 'guide' | 'vaas-quant' | 'vaas-assumptions' | 'vaas-math';
 
 export function UserManualModal({ isOpen, onClose }: UserManualModalProps) {
     const [activeTab, setActiveTab] = useState<ManualTab>('guide');
@@ -51,6 +51,15 @@ export function UserManualModal({ isOpen, onClose }: UserManualModalProps) {
 
                 <div className="px-6 pt-4 border-b border-stone-700 bg-stone-900/60">
                     <div className="flex items-center gap-2 flex-wrap">
+                        <button
+                            onClick={() => setActiveTab('vaas-assumptions')}
+                            className={`px-3 py-1.5 text-sm rounded-lg border transition-colors ${activeTab === 'vaas-assumptions'
+                                ? 'bg-amber-600/20 border-amber-500/50 text-amber-300'
+                                : 'bg-stone-800 border-stone-700 text-stone-300 hover:bg-stone-700'
+                                }`}
+                        >
+                            Reference Section
+                        </button>
                         <button
                             onClick={() => setActiveTab('guide')}
                             className={`px-3 py-1.5 text-sm rounded-lg border transition-colors ${activeTab === 'guide'
@@ -120,7 +129,7 @@ export function UserManualModal({ isOpen, onClose }: UserManualModalProps) {
                             </h3>
                             <div className="bg-stone-800/50 p-4 rounded-xl border border-stone-700 space-y-3 text-sm">
                                 <p><strong>Primary outputs:</strong> Months Saved, Capacity Unlocked, Cash Burn Prevented, Business Upside, Net Benefit per Block.</p>
-                                <p><strong>Important rule:</strong> Hiring Lag and RTL Delay are mutually exclusive in the model.</p>
+                                <p><strong>Idle Time Factor:</strong> configurable percentage used to model internal waiting/blocked time.</p>
                                 <p><strong>Market Upside:</strong> optional $/month business value from earlier delivery.</p>
                                 <p><strong>Human Review %:</strong> client-side review effort is added on top of VaaS quote economics.</p>
                                 <code className="block bg-stone-950 p-2 rounded text-xs font-mono text-amber-400">
@@ -219,15 +228,14 @@ export function UserManualModal({ isOpen, onClose }: UserManualModalProps) {
                         <section className="space-y-3 text-sm">
                             <h4 className="text-stone-100 font-semibold">3) Estimate internal comparable cost</h4>
                             <div className="bg-stone-800/30 border border-stone-700/50 rounded-lg p-4 space-y-2">
-                                <p>Internal execution cost is based on team size, engineer cost, and internal duration.</p>
-                                <p>Delay logic is non-stacked: hiring lag and RTL delay are treated as mutually exclusive in cost terms.</p>
-                                <p>Model also adds idle/wait inefficiency as a fixed internal waste component.</p>
+                                <p>Internal execution cost is based on team size, engineer hourly rate, and internal duration.</p>
+                                <p>Model adds idle/wait inefficiency using the Idle Time Factor input.</p>
                                 <code className="block bg-stone-950 p-2 rounded text-xs font-mono text-amber-400">
                                     Base Internal Cost = Team Size x Engineer Cost/Mo x Internal Duration
                                     <br />
-                                    Internal Team Cost = Base Internal Cost + Delay Cost
+                                    Internal Team Cost = Base Internal Cost
                                     <br />
-                                    Idle Cost = Base Internal Cost x Idle Fraction
+                                    Idle Cost = Base Internal Cost x Idle Time Factor
                                 </code>
                             </div>
                         </section>
@@ -262,6 +270,47 @@ export function UserManualModal({ isOpen, onClose }: UserManualModalProps) {
                                 </code>
                             </div>
                         </section>
+                    </div>
+                )}
+
+                {activeTab === 'vaas-assumptions' && (
+                    <div className="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-6 text-stone-300">
+                        <div className="bg-stone-800/40 border border-stone-700 rounded-xl p-4">
+                            <h3 className="text-lg font-semibold text-amber-300">Reference Section</h3>
+                            <p className="text-sm text-stone-400 mt-1">
+                                Assumptions are configurable; these defaults model typical internal constraints.
+                            </p>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                            <div className="bg-stone-800/30 border border-stone-700/50 rounded-lg p-4 space-y-2">
+                                <h4 className="text-stone-100 font-semibold">Idle Time Factor</h4>
+                                <p>Percentage of internal time lost to waiting/blocked work; used to model idle cost.</p>
+                                <ul className="list-disc pl-5 space-y-1 text-stone-300">
+                                    <li>Waiting for licenses or tool access</li>
+                                    <li>Waiting to be unblocked by another team or dependency</li>
+                                    <li>Waiting for RTL availability or changes</li>
+                                    <li>Queue time for compute, lab resources, or test infrastructure</li>
+                                    <li>Environment setup, access approvals, or security review</li>
+                                    <li>Rework after late requirement changes or bugs</li>
+                                </ul>
+                            </div>
+
+                            <div className="bg-stone-800/30 border border-stone-700/50 rounded-lg p-4 space-y-2">
+                                <h4 className="text-stone-100 font-semibold">Human Review %</h4>
+                                <p>Client-side review effort applied to the saved engineering effort.</p>
+                            </div>
+
+                            <div className="bg-stone-800/30 border border-stone-700/50 rounded-lg p-4 space-y-2">
+                                <h4 className="text-stone-100 font-semibold">Hiring Lag</h4>
+                                <p>Additional internal ramp time when more engineers are required.</p>
+                            </div>
+
+                            <div className="bg-stone-800/30 border border-stone-700/50 rounded-lg p-4 space-y-2">
+                                <h4 className="text-stone-100 font-semibold">Engineer Hourly Rate</h4>
+                                <p>Hourly wage used to translate time into monthly internal cost.</p>
+                            </div>
+                        </div>
                     </div>
                 )}
 

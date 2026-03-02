@@ -1,4 +1,5 @@
 import { VaaSResult } from '../vaasConstants';
+import { formatCurrency } from '../utils/format';
 
 interface VaaSKPICardsProps {
     result: VaaSResult;
@@ -15,7 +16,7 @@ export function VaaSKPICards({ result, viewMode = 'admin' }: VaaSKPICardsProps) 
                 <div className="bg-stone-800/50 rounded-xl p-4 border border-stone-700/50">
                     <div className="text-sm text-stone-400">External Cost / Block</div>
                     <div className="text-2xl font-bold text-amber-400">
-                        ${(result.salesExternalCostPerBlock / 1000).toFixed(0)}K
+                        {formatCurrency(result.salesExternalCostPerBlock, true)}
                     </div>
                     <div className="text-xs text-stone-500 mt-1">Traditional verification cost basis</div>
                 </div>
@@ -27,28 +28,28 @@ export function VaaSKPICards({ result, viewMode = 'admin' }: VaaSKPICardsProps) 
                 <div className="bg-stone-800/50 rounded-xl p-4 border border-stone-700/50">
                     <div className="text-sm text-stone-400">Active Verification Cost</div>
                     <div className="text-2xl font-bold text-amber-400">
-                        ${(result.salesActiveCostPerBlock / 1000).toFixed(0)}K
+                        {formatCurrency(result.salesActiveCostPerBlock, true)}
                     </div>
                     <div className="text-xs text-stone-500 mt-1">Execution + effective delay cost</div>
                 </div>
                 <div className="bg-stone-800/50 rounded-xl p-4 border border-stone-700/50">
                     <div className="text-sm text-stone-400">Idle Time Cost</div>
                     <div className="text-2xl font-bold text-amber-400">
-                        ${(result.salesIdleCostPerBlock / 1000).toFixed(0)}K
+                        {formatCurrency(result.salesIdleCostPerBlock, true)}
                     </div>
                     <div className="text-xs text-stone-500 mt-1">Salary waste during blocked/wait time</div>
                 </div>
                 <div className="bg-stone-800/50 rounded-xl p-4 border border-stone-700/50">
                     <div className="text-sm text-stone-400">Delay Cost</div>
                     <div className="text-2xl font-bold text-amber-400">
-                        ${(result.salesDelayCostPerBlock / 1000).toFixed(0)}K
+                        {formatCurrency(result.salesDelayCostPerBlock, true)}
                     </div>
-                    <div className="text-xs text-stone-500 mt-1">Cost of RTL delay where applicable</div>
+                    <div className="text-xs text-stone-500 mt-1">Delay not modeled (shown as $0)</div>
                 </div>
                 <div className="bg-stone-800/50 rounded-xl p-4 border border-stone-700/50">
                     <div className="text-sm text-stone-400">External Cost / Year</div>
                     <div className="text-2xl font-bold text-amber-400">
-                        ${(result.salesExternalCostAnnual / 1000).toFixed(0)}K
+                        {formatCurrency(result.salesExternalCostAnnual, true)}
                     </div>
                     <div className="text-xs text-stone-500 mt-1">Annualized by block count</div>
                 </div>
@@ -61,7 +62,7 @@ export function VaaSKPICards({ result, viewMode = 'admin' }: VaaSKPICardsProps) 
             <div className="bg-stone-800/50 rounded-xl p-4 border border-stone-700/50">
                 <div className="text-sm text-stone-400">Net Benefit / Block</div>
                 <div className={`text-2xl font-bold ${result.netBenefitPerBlock >= 0 ? 'text-amber-400' : 'text-red-400'}`}>
-                    ${(result.netBenefitPerBlock / 1000).toFixed(0)}K
+                    {formatCurrency(result.netBenefitPerBlock, true)}
                 </div>
                 <div className="text-xs text-stone-500 mt-1">
                     Includes quote + optional business upside
@@ -88,16 +89,16 @@ export function VaaSKPICards({ result, viewMode = 'admin' }: VaaSKPICardsProps) 
             <div className="bg-stone-800/50 rounded-xl p-4 border border-stone-700/50">
                 <div className="text-sm text-stone-400">Cash Burn Prevented</div>
                 <div className="text-2xl font-bold text-red-400">
-                    ${(result.totalCashBurnPrevented / 1000).toFixed(0)}K
+                    {formatCurrency(result.totalCashBurnPrevented, true)}
                 </div>
                 <div className="text-xs text-stone-500 mt-1">
-                    Avoided Delay + Idle Waste
+                    Avoided Idle Waste
                 </div>
             </div>
             <div className="bg-stone-800/50 rounded-xl p-4 border border-stone-700/50">
                 <div className="text-sm text-stone-400">Business Upside / Block</div>
                 <div className="text-2xl font-bold text-amber-400">
-                    ${(result.businessUpsidePerBlock / 1000).toFixed(0)}K
+                    {formatCurrency(result.businessUpsidePerBlock, true)}
                 </div>
                 <div className="text-xs text-stone-500 mt-1">
                     Time-to-market benefit (optional)
@@ -106,7 +107,7 @@ export function VaaSKPICards({ result, viewMode = 'admin' }: VaaSKPICardsProps) 
             <div className="bg-stone-800/50 rounded-xl p-4 border border-stone-700/50">
                 <div className="text-sm text-stone-400">Client Review Cost / Block</div>
                 <div className="text-2xl font-bold text-yellow-400">
-                    ${(result.clientReviewCostPerBlock / 1000).toFixed(0)}K
+                    {formatCurrency(result.clientReviewCostPerBlock, true)}
                 </div>
                 <div className="text-xs text-stone-500 mt-1">
                     Client-side HITL oversight effort

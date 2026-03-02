@@ -43,125 +43,129 @@ export function VaaSExcelExportBtn({ inputs, result, viewMode = 'admin' }: VaaSE
         wsQuote['B7'] = { t: 'n', v: inputs.internalTeamSize };
         wsQuote['C7'] = { t: 's', v: 'engineers' };
 
-        wsQuote['A8'] = { t: 's', v: 'Annual Block Count' };
-        wsQuote['B8'] = { t: 'n', v: inputs.annualBlockCount };
-        wsQuote['C8'] = { t: 's', v: 'blocks/year' };
+        wsQuote['A8'] = { t: 's', v: 'Engineer Hourly Rate' };
+        wsQuote['B8'] = { t: 'n', v: inputs.engineerHourlyRate };
+        wsQuote['C8'] = { t: 's', v: '$/hr' };
 
-        wsQuote['A9'] = { t: 's', v: 'Parallel Blocks' };
-        wsQuote['B9'] = { t: 'n', v: inputs.parallelBlocks };
-        wsQuote['C9'] = { t: 's', v: 'in flight' };
+        wsQuote['A9'] = { t: 's', v: 'Idle Time Factor' };
+        wsQuote['B9'] = { t: 'n', v: inputs.idleTimePercent };
+        wsQuote['C9'] = { t: 's', v: '%' };
 
-        wsQuote['A10'] = { t: 's', v: 'Hiring Lag' };
-        wsQuote['B10'] = { t: 'n', v: inputs.hiringLagMonths };
-        wsQuote['C10'] = { t: 's', v: 'months' };
+        wsQuote['A10'] = { t: 's', v: 'Annual Block Count' };
+        wsQuote['B10'] = { t: 'n', v: inputs.annualBlockCount };
+        wsQuote['C10'] = { t: 's', v: 'blocks/year' };
 
-        wsQuote['A11'] = { t: 's', v: 'Est. RTL Delay Impact' };
-        wsQuote['B11'] = { t: 'n', v: inputs.hiringLagMonths > 0 ? 0 : inputs.estRtlDelayWeeks };
-        wsQuote['C11'] = { t: 's', v: 'weeks (mutually exclusive with hiring lag)' };
+        wsQuote['A11'] = { t: 's', v: 'Parallel Blocks' };
+        wsQuote['B11'] = { t: 'n', v: inputs.parallelBlocks };
+        wsQuote['C11'] = { t: 's', v: 'in flight' };
+
+        wsQuote['A12'] = { t: 's', v: 'Hiring Lag' };
+        wsQuote['B12'] = { t: 'n', v: inputs.hiringLagMonths };
+        wsQuote['C12'] = { t: 's', v: 'months' };
 
         if (isSales) {
-            wsQuote['A13'] = { t: 's', v: '=== EXTERNAL COST BASIS ===' };
-            wsQuote['A14'] = { t: 's', v: 'External Cost / Block' };
-            wsQuote['B14'] = { t: 'n', v: result.salesExternalCostPerBlock };
-            wsQuote['C14'] = { t: 's', v: '$' };
-            wsQuote['A15'] = { t: 's', v: 'Active Verification Cost / Block' };
-            wsQuote['B15'] = { t: 'n', v: result.salesActiveCostPerBlock };
+            wsQuote['A14'] = { t: 's', v: '=== EXTERNAL COST BASIS ===' };
+            wsQuote['A15'] = { t: 's', v: 'External Cost / Block' };
+            wsQuote['B15'] = { t: 'n', v: result.salesExternalCostPerBlock };
             wsQuote['C15'] = { t: 's', v: '$' };
-            wsQuote['A16'] = { t: 's', v: 'Idle Time Cost / Block' };
-            wsQuote['B16'] = { t: 'n', v: result.salesIdleCostPerBlock };
+            wsQuote['A16'] = { t: 's', v: 'Active Verification Cost / Block' };
+            wsQuote['B16'] = { t: 'n', v: result.salesActiveCostPerBlock };
             wsQuote['C16'] = { t: 's', v: '$' };
-            wsQuote['A17'] = { t: 's', v: 'Delay Cost / Block' };
-            wsQuote['B17'] = { t: 'n', v: result.salesDelayCostPerBlock };
+            wsQuote['A17'] = { t: 's', v: 'Idle Time Cost / Block' };
+            wsQuote['B17'] = { t: 'n', v: result.salesIdleCostPerBlock };
             wsQuote['C17'] = { t: 's', v: '$' };
-            wsQuote['A18'] = { t: 's', v: 'Traditional Duration' };
-            wsQuote['B18'] = { t: 'n', v: result.traditionalDurationMonths + (result.internalStartOffset || 0) };
-            wsQuote['C18'] = { t: 's', v: 'months' };
+            wsQuote['A18'] = { t: 's', v: 'Delay Cost / Block (not modeled)' };
+            wsQuote['B18'] = { t: 'n', v: result.salesDelayCostPerBlock };
+            wsQuote['C18'] = { t: 's', v: '$' };
+            wsQuote['A19'] = { t: 's', v: 'Traditional Duration' };
+            wsQuote['B19'] = { t: 'n', v: result.traditionalDurationMonths + (result.internalStartOffset || 0) };
+            wsQuote['C19'] = { t: 's', v: 'months' };
 
-            wsQuote['A20'] = { t: 's', v: '=== ANNUAL EXTERNAL COST PROJECTION ===' };
-            wsQuote['A21'] = { t: 's', v: 'Annual External Cost' };
-            wsQuote['B21'] = { t: 'n', v: result.salesExternalCostAnnual };
-            wsQuote['C21'] = { t: 's', v: '$' };
-            wsQuote['A22'] = { t: 's', v: 'Annual Block Count' };
-            wsQuote['B22'] = { t: 'n', v: inputs.annualBlockCount };
-            wsQuote['C22'] = { t: 's', v: 'blocks/year' };
+            wsQuote['A21'] = { t: 's', v: '=== ANNUAL EXTERNAL COST PROJECTION ===' };
+            wsQuote['A22'] = { t: 's', v: 'Annual External Cost' };
+            wsQuote['B22'] = { t: 'n', v: result.salesExternalCostAnnual };
+            wsQuote['C22'] = { t: 's', v: '$' };
+            wsQuote['A23'] = { t: 's', v: 'Annual Block Count' };
+            wsQuote['B23'] = { t: 'n', v: inputs.annualBlockCount };
+            wsQuote['C23'] = { t: 's', v: 'blocks/year' };
         } else {
             // Section: VaaS Proposal
-            wsQuote['A13'] = { t: 's', v: '=== VAAS PROPOSAL ===' };
-            wsQuote['A14'] = { t: 's', v: 'VaaS Quote Price' };
-            wsQuote['B14'] = { t: 'n', v: inputs.vaasQuotePrice };
-            wsQuote['C14'] = { t: 's', v: '$ (Fixed)' };
+            wsQuote['A14'] = { t: 's', v: '=== VAAS PROPOSAL ===' };
+            wsQuote['A15'] = { t: 's', v: 'VaaS Quote Price' };
+            wsQuote['B15'] = { t: 'n', v: inputs.vaasQuotePrice };
+            wsQuote['C15'] = { t: 's', v: '$ (Fixed)' };
 
             const effectiveSpeedupFactor = result.provenSpeedupRatio ?? VAAS_CONSTANTS.SPEEDUP_FACTOR;
-            wsQuote['A15'] = { t: 's', v: 'Speedup Factor' };
-            wsQuote['B15'] = { t: 'n', v: effectiveSpeedupFactor * 100 };
-            wsQuote['C15'] = { t: 's', v: '% Faster' };
+            wsQuote['A16'] = { t: 's', v: 'Speedup Factor' };
+            wsQuote['B16'] = { t: 'n', v: effectiveSpeedupFactor * 100 };
+            wsQuote['C16'] = { t: 's', v: '% Faster' };
 
-            wsQuote['A16'] = { t: 's', v: 'Market Upside' };
-            wsQuote['B16'] = { t: 'n', v: inputs.marketUpsidePerMonth };
-            wsQuote['C16'] = { t: 's', v: '$/month' };
-            wsQuote['A17'] = { t: 's', v: 'Human Review %' };
-            wsQuote['B17'] = { t: 'n', v: inputs.humanReviewPercent };
-            wsQuote['C17'] = { t: 's', v: '%' };
+            wsQuote['A17'] = { t: 's', v: 'Market Upside' };
+            wsQuote['B17'] = { t: 'n', v: inputs.marketUpsidePerMonth };
+            wsQuote['C17'] = { t: 's', v: '$/month' };
+            wsQuote['A18'] = { t: 's', v: 'Human Review %' };
+            wsQuote['B18'] = { t: 'n', v: inputs.humanReviewPercent };
+            wsQuote['C18'] = { t: 's', v: '%' };
 
             // Section: Key Outcomes
-            wsQuote['A18'] = { t: 's', v: '=== HARD METRICS (Per Block) ===' };
-            wsQuote['A19'] = { t: 's', v: 'Metric' };
-            wsQuote['B19'] = { t: 's', v: 'Value' };
+            wsQuote['A19'] = { t: 's', v: '=== HARD METRICS (Per Block) ===' };
+            wsQuote['A20'] = { t: 's', v: 'Metric' };
+            wsQuote['B20'] = { t: 's', v: 'Value' };
 
-            wsQuote['A20'] = { t: 's', v: 'Time to Market Saved' };
-            wsQuote['B20'] = { t: 'n', v: result.monthsSaved };
-            wsQuote['C20'] = { t: 's', v: 'months' };
+            wsQuote['A21'] = { t: 's', v: 'Time to Market Saved' };
+            wsQuote['B21'] = { t: 'n', v: result.monthsSaved };
+            wsQuote['C21'] = { t: 's', v: 'months' };
 
-            wsQuote['A21'] = { t: 's', v: 'Internal Capacity Unlocked' };
-            wsQuote['B21'] = { t: 'n', v: result.fteMonthsSaved };
-            wsQuote['C21'] = { t: 's', v: 'FTE-Months' };
+            wsQuote['A22'] = { t: 's', v: 'Internal Capacity Unlocked' };
+            wsQuote['B22'] = { t: 'n', v: result.fteMonthsSaved };
+            wsQuote['C22'] = { t: 's', v: 'FTE-Months' };
 
-            wsQuote['A22'] = { t: 's', v: 'Cash Burn Prevented' };
-            wsQuote['B22'] = { t: 'n', v: result.totalCashBurnPrevented };
-            wsQuote['C22'] = { t: 's', v: '$ (Delay + Idle Waste)' };
+            wsQuote['A23'] = { t: 's', v: 'Cash Burn Prevented' };
+            wsQuote['B23'] = { t: 'n', v: result.totalCashBurnPrevented };
+            wsQuote['C23'] = { t: 's', v: '$ (Idle Waste)' };
 
-            wsQuote['A23'] = { t: 's', v: 'Business Upside' };
-            wsQuote['B23'] = { t: 'n', v: result.businessUpsidePerBlock };
-            wsQuote['C23'] = { t: 's', v: '$ (from earlier market entry)' };
+            wsQuote['A24'] = { t: 's', v: 'Business Upside' };
+            wsQuote['B24'] = { t: 'n', v: result.businessUpsidePerBlock };
+            wsQuote['C24'] = { t: 's', v: '$ (from earlier market entry)' };
 
-            wsQuote['A24'] = { t: 's', v: 'Net Benefit / Block' };
-            wsQuote['B24'] = { t: 'n', v: result.netBenefitPerBlock };
-            wsQuote['C24'] = { t: 's', v: '$ (internal comparable + upside - quote - client review)' };
+            wsQuote['A25'] = { t: 's', v: 'Net Benefit / Block' };
+            wsQuote['B25'] = { t: 'n', v: result.netBenefitPerBlock };
+            wsQuote['C25'] = { t: 's', v: '$ (internal comparable + upside - quote - client review)' };
 
-            wsQuote['A25'] = { t: 's', v: 'Total Project Cost (Internal)' };
-            wsQuote['B25'] = { t: 'n', v: result.internalTeamCost };
-            wsQuote['C25'] = { t: 's', v: '$ (includes effective delay)' };
-            wsQuote['A26'] = { t: 's', v: 'Client Review Cost / Block' };
-            wsQuote['B26'] = { t: 'n', v: result.clientReviewCostPerBlock };
-            wsQuote['C26'] = { t: 's', v: '$ (client-side HITL)' };
+            wsQuote['A26'] = { t: 's', v: 'Total Project Cost (Internal)' };
+            wsQuote['B26'] = { t: 'n', v: result.internalTeamCost };
+            wsQuote['C26'] = { t: 's', v: '$ (baseline internal cost)' };
+            wsQuote['A27'] = { t: 's', v: 'Client Review Cost / Block' };
+            wsQuote['B27'] = { t: 'n', v: result.clientReviewCostPerBlock };
+            wsQuote['C27'] = { t: 's', v: '$ (client-side HITL)' };
 
             // Section: Annual Projection
-            wsQuote['A27'] = { t: 's', v: '=== ANNUAL EFFICIENCY PROJECTION ===' };
-            wsQuote['A28'] = { t: 's', v: 'Based on Annual Block Count:' };
-            wsQuote['B28'] = { t: 'n', v: inputs.annualBlockCount };
+            wsQuote['A28'] = { t: 's', v: '=== ANNUAL EFFICIENCY PROJECTION ===' };
+            wsQuote['A29'] = { t: 's', v: 'Based on Annual Block Count:' };
+            wsQuote['B29'] = { t: 'n', v: inputs.annualBlockCount };
 
-            wsQuote['A29'] = { t: 's', v: 'Total Capacity Unlocked' };
-            wsQuote['B29'] = { t: 'n', v: result.fteMonthsSaved * inputs.annualBlockCount };
-            wsQuote['C29'] = { t: 's', v: 'FTE-Months' };
+            wsQuote['A30'] = { t: 's', v: 'Total Capacity Unlocked' };
+            wsQuote['B30'] = { t: 'n', v: result.fteMonthsSaved * inputs.annualBlockCount };
+            wsQuote['C30'] = { t: 's', v: 'FTE-Months' };
 
-            wsQuote['A30'] = { t: 's', v: 'Total Cash Burn Prevented' };
-            wsQuote['B30'] = { t: 'n', v: result.projectedAnnualEfficiency };
-            wsQuote['C30'] = { t: 's', v: '$' };
+            wsQuote['A31'] = { t: 's', v: 'Total Cash Burn Prevented' };
+            wsQuote['B31'] = { t: 'n', v: result.projectedAnnualEfficiency };
+            wsQuote['C31'] = { t: 's', v: '$' };
 
-            wsQuote['A31'] = { t: 's', v: 'Annual Calendar Time Saved' };
-            wsQuote['B31'] = { t: 'n', v: result.projectedAnnualTimeSaved };
-            wsQuote['C31'] = { t: 's', v: 'months (parallelism-adjusted)' };
+            wsQuote['A32'] = { t: 's', v: 'Annual Calendar Time Saved' };
+            wsQuote['B32'] = { t: 'n', v: result.projectedAnnualTimeSaved };
+            wsQuote['C32'] = { t: 's', v: 'months (parallelism-adjusted)' };
 
-            wsQuote['A32'] = { t: 's', v: 'Annual Net Benefit' };
-            wsQuote['B32'] = { t: 'n', v: result.projectedAnnualNetBenefit };
-            wsQuote['C32'] = { t: 's', v: '$' };
-            wsQuote['A33'] = { t: 's', v: 'Annual Client Review Cost' };
-            wsQuote['B33'] = { t: 'n', v: result.annualClientReviewCost };
+            wsQuote['A33'] = { t: 's', v: 'Annual Net Benefit' };
+            wsQuote['B33'] = { t: 'n', v: result.projectedAnnualNetBenefit };
             wsQuote['C33'] = { t: 's', v: '$' };
+            wsQuote['A34'] = { t: 's', v: 'Annual Client Review Cost' };
+            wsQuote['B34'] = { t: 'n', v: result.annualClientReviewCost };
+            wsQuote['C34'] = { t: 's', v: '$' };
         }
 
         wsQuote['!cols'] = [{ wch: 30 }, { wch: 20 }, { wch: 20 }];
-        wsQuote['!ref'] = isSales ? 'A1:C22' : 'A1:C33';
+        wsQuote['!ref'] = isSales ? 'A1:C23' : 'A1:C34';
         XLSX.utils.book_append_sheet(wb, wsQuote, 'Quote Summary');
 
 
@@ -178,11 +182,10 @@ export function VaaSExcelExportBtn({ inputs, result, viewMode = 'admin' }: VaaSE
             ? ['Week', 'Traditional Progress (%)', 'Traditional Active Cost ($)', 'Idle Cost ($)', 'External Cost ($)']
             : ['Week', 'Traditional Progress (%)', 'VaaS Progress (%)', 'Traditional Cost ($)', 'VaaS Quote Cost ($)', 'Client Review Cost ($)', 'VaaS Total Cost ($)'];
 
-        // Match hook logic: execution accrues after hiring lag; delay cost accrues over delay window.
-        const engineerMonthlyCost = VAAS_CONSTANTS.ENGINEER_SALARY_YEARLY / VAAS_CONSTANTS.MONTHS_PER_YEAR;
+        // Match hook logic: execution accrues after hiring lag.
+        const engineerMonthlyCost = inputs.engineerHourlyRate * VAAS_CONSTANTS.HOURS_PER_MONTH;
         const baseInternalTeamCost = inputs.internalTeamSize * engineerMonthlyCost * result.traditionalDurationMonths;
-        const effectiveDelayWeeks = inputs.hiringLagMonths > 0 ? 0 : inputs.estRtlDelayWeeks;
-        const delayCostPerBlock = result.salesDelayCostPerBlock;
+        const idleTimeFraction = inputs.idleTimePercent / 100;
 
         for (let week = 1; week <= maxWeeks; week++) {
             const elapsedExecutionWeeks = Math.max(0, week - hiringLagWeeks);
@@ -191,12 +194,9 @@ export function VaaSExcelExportBtn({ inputs, result, viewMode = 'admin' }: VaaSE
                 (elapsedExecutionWeeks / executionWeeks) * baseInternalTeamCost,
                 baseInternalTeamCost
             );
-            const delayCostToDate = effectiveDelayWeeks > 0
-                ? Math.min((week / Math.max(effectiveDelayWeeks, 0.01)) * delayCostPerBlock, delayCostPerBlock)
-                : 0;
-            const tradCostCurrent = executionCostToDate + delayCostToDate;
+            const tradCostCurrent = executionCostToDate;
             if (isSales) {
-                const idleCostCurrent = tradCostCurrent * 0.30;
+                const idleCostCurrent = tradCostCurrent * idleTimeFraction;
                 weeklyData.push([
                     week,
                     Math.round(tradProgress) + '%',

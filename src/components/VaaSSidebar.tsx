@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import {
     Layers,
     Users,
@@ -24,6 +25,13 @@ interface VaaSSidebarProps {
 }
 
 export function VaaSSidebar({ inputs, onInputChange, onReset, sectionVisibility }: VaaSSidebarProps) {
+    const [hourlyRateDraft, setHourlyRateDraft] = useState(() => String(inputs.engineerHourlyRate));
+    const hourlyRateConfig = VAAS_INPUT_CONFIGS.engineerHourlyRate;
+
+    useEffect(() => {
+        setHourlyRateDraft(String(inputs.engineerHourlyRate));
+    }, [inputs.engineerHourlyRate]);
+
     const complexityLabels: Record<BlockComplexity, string> = {
         small: 'Low (4 mo)',
         medium: 'Medium (7 mo)',
@@ -178,6 +186,46 @@ export function VaaSSidebar({ inputs, onInputChange, onReset, sectionVisibility 
                     <div className="space-y-2">
                         <div className="flex items-center justify-between">
                             <label className="flex items-center gap-2 text-sm text-stone-400">
+                                <DollarSign size={14} />
+                                Engineer Hourly Rate
+                                <SliderHelp text={VAAS_INPUT_CONFIGS.engineerHourlyRate.tooltip || 'Hourly wage used for internal cost calculations'} />
+                            </label>
+                        </div>
+                        <div className="relative">
+                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-500">$</span>
+                            <input
+                                type="number"
+                                min={hourlyRateConfig.min}
+                                max={hourlyRateConfig.max}
+                                step={hourlyRateConfig.step}
+                                value={hourlyRateDraft}
+                                onChange={(e) => {
+                                    const nextValue = e.target.value;
+                                    setHourlyRateDraft(nextValue);
+                                    const parsed = Number(nextValue);
+                                    if (!Number.isFinite(parsed)) return;
+                                    if (parsed < hourlyRateConfig.min || parsed > hourlyRateConfig.max) return;
+                                    onInputChange('engineerHourlyRate', parsed);
+                                }}
+                                onBlur={() => {
+                                    const parsed = Number(hourlyRateDraft);
+                                    const fallback = inputs.engineerHourlyRate;
+                                    const normalized = Number.isFinite(parsed) ? parsed : fallback;
+                                    const clamped = Math.min(hourlyRateConfig.max, Math.max(hourlyRateConfig.min, normalized));
+                                    onInputChange('engineerHourlyRate', clamped);
+                                    setHourlyRateDraft(String(clamped));
+                                }}
+                                className="w-full bg-stone-800 border border-stone-700 rounded-lg pl-7 pr-10 py-2 text-sm text-stone-200 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                            />
+                            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-500 text-xs">/hr</span>
+                        </div>
+                    </div>
+                )}
+
+                {sectionVisibility?.teamDelay !== false && (
+                    <div className="space-y-2">
+                        <div className="flex items-center justify-between">
+                            <label className="flex items-center gap-2 text-sm text-stone-400">
                                 <Users size={14} />
                                 Internal Hiring Lag
                                 <SliderHelp text={VAAS_INPUT_CONFIGS.hiringLagMonths.tooltip || 'Time required to recruit, hire, and onboard before productive work begins'} />
@@ -207,31 +255,25 @@ export function VaaSSidebar({ inputs, onInputChange, onReset, sectionVisibility 
                         <div className="flex items-center justify-between">
                             <label className="flex items-center gap-2 text-sm text-stone-400">
                                 <Layers size={14} />
-                                Est. RTL Delay
-                                <SliderHelp text={VAAS_INPUT_CONFIGS.estRtlDelayWeeks.tooltip || 'Expected delay in RTL delivery that burns engineering cash'} />
+                                Idle Time Factor
+                                <SliderHelp text={VAAS_INPUT_CONFIGS.idleTimePercent.tooltip || 'Estimated internal inefficiency from waiting/blocked time'} />
                             </label>
                             <span className="text-sm font-medium text-amber-400">
-                                {inputs.estRtlDelayWeeks} weeks
+                                {inputs.idleTimePercent}%
                             </span>
                         </div>
                         <input
                             type="range"
-                            min={VAAS_INPUT_CONFIGS.estRtlDelayWeeks.min}
-                            max={VAAS_INPUT_CONFIGS.estRtlDelayWeeks.max}
-                            step={VAAS_INPUT_CONFIGS.estRtlDelayWeeks.step}
-                            value={inputs.estRtlDelayWeeks}
-                            onChange={(e) => onInputChange('estRtlDelayWeeks', Number(e.target.value))}
-                            disabled={inputs.hiringLagMonths > 0}
+                            min={VAAS_INPUT_CONFIGS.idleTimePercent.min}
+                            max={VAAS_INPUT_CONFIGS.idleTimePercent.max}
+                            step={VAAS_INPUT_CONFIGS.idleTimePercent.step}
+                            value={inputs.idleTimePercent}
+                            onChange={(e) => onInputChange('idleTimePercent', Number(e.target.value))}
                             className="w-full h-2 bg-stone-700 rounded-lg appearance-none cursor-pointer accent-amber-400"
                         />
-                        {inputs.hiringLagMonths > 0 && (
-                            <div className="text-[11px] text-amber-500">
-                                RTL delay is disabled while Hiring Lag is set (&gt; 0). These delay modes are mutually exclusive.
-                            </div>
-                        )}
                         <div className="flex justify-between text-xs text-stone-500">
-                            <span>Best Case ({VAAS_INPUT_CONFIGS.estRtlDelayWeeks.min})</span>
-                            <span>Worst Case ({VAAS_INPUT_CONFIGS.estRtlDelayWeeks.max})</span>
+                            <span>{VAAS_INPUT_CONFIGS.idleTimePercent.min}%</span>
+                            <span>{VAAS_INPUT_CONFIGS.idleTimePercent.max}%</span>
                         </div>
                     </div>
                 )}

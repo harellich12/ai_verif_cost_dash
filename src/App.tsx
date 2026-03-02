@@ -97,13 +97,17 @@ const PRESENTATION_CONFIG_KEY_V2 = 'presentation-mode-config-v2';
 const PRESENTATION_CONFIG_KEY_V1 = 'presentation-mode-config-v1';
 
 function createDefaultPresentationConfig(): PresentationConfig {
-    const vaasDefaults: VaaSVisibilityConfig = {
+    const vaasPresentationDefaults: VaaSVisibilityConfig = {
         blockType: true,
         complexity: true,
         teamDelay: true,
         pricing: true,
         annualPlanning: true,
         benchmark: true,
+    };
+    const vaasSalesDefaults: VaaSVisibilityConfig = {
+        ...vaasPresentationDefaults,
+        pricing: true,
     };
     const vaasContentDefaults: VaaSContentVisibilityConfig = {
         kpiCards: true,
@@ -123,8 +127,8 @@ function createDefaultPresentationConfig(): PresentationConfig {
                 advanced: true,
             },
             vaas: {
-                presentation: { ...vaasDefaults },
-                sales: { ...vaasDefaults },
+                presentation: { ...vaasPresentationDefaults },
+                sales: { ...vaasSalesDefaults },
             },
         },
         content: {
@@ -213,8 +217,8 @@ function loadPresentationConfig(): PresentationConfig {
 }
 
 function App() {
-    const [mode, setMode] = useState<AppMode>('roi');
-    const [viewMode, setViewMode] = useState<ViewMode>('admin');
+    const [mode, setMode] = useState<AppMode>('vaas');
+    const [viewMode, setViewMode] = useState<ViewMode>('sales');
     const [isPresentationSetupOpen, setIsPresentationSetupOpen] = useState(false);
     const roiCalc = useROICalculator();
     const vaasCalc = useVaaSEstimator();
@@ -256,18 +260,17 @@ function App() {
         : config.footerText;
 
     const roiSidebarVisibility = isPresentation ? presentationConfig.sidebar.roi : undefined;
-    const vaasSidebarVisibility = viewMode === 'presentation'
-        ? presentationConfig.sidebar.vaas.presentation
-        : viewMode === 'sales'
-            ? presentationConfig.sidebar.vaas.sales
-            : undefined;
+    const vaasSidebarVisibility = viewMode === 'presentation' || viewMode === 'sales'
+        ? {
+            ...presentationConfig.sidebar.vaas.presentation,
+            ...(viewMode === 'sales' ? { pricing: false } : {}),
+        }
+        : undefined;
     const showRoiKpiCards = viewMode === 'admin' || presentationConfig.content.roi.kpiCards;
     const showRoiResultChart = viewMode === 'admin' || presentationConfig.content.roi.resultChart;
-    const vaasContentVisibility = viewMode === 'presentation'
+    const vaasContentVisibility = viewMode === 'presentation' || viewMode === 'sales'
         ? presentationConfig.content.vaas.presentation
-        : viewMode === 'sales'
-            ? presentationConfig.content.vaas.sales
-            : undefined;
+        : undefined;
     const showVaasKpiCards = viewMode === 'admin' || vaasContentVisibility?.kpiCards === true;
     const showVaasIdleCostChart = viewMode === 'admin' || vaasContentVisibility?.idleCostChart === true;
     const showVaasTimelineChart = viewMode === 'admin' || vaasContentVisibility?.timelineChart === true;
@@ -277,9 +280,7 @@ function App() {
     const dashboardKey = `dashboard-${mode}-${viewMode}-${JSON.stringify(
         mode === 'roi'
             ? presentationConfig.content.roi
-            : viewMode === 'sales'
-                ? presentationConfig.content.vaas.sales
-                : presentationConfig.content.vaas.presentation
+            : presentationConfig.content.vaas.presentation
     )}`;
 
     const resetPresentationConfig = () => {
@@ -613,56 +614,8 @@ function App() {
                                     ))}
                                 </div>
 
-                                <h4 className="text-sm font-semibold text-stone-200 mt-5 mb-3">VaaS Sidebar (Sales)</h4>
-                                <div className="space-y-2 text-sm">
-                                    {Object.entries(presentationConfig.sidebar.vaas.sales).map(([key, enabled]) => (
-                                        <label key={key} className="flex items-center gap-2 text-stone-300">
-                                            <input
-                                                type="checkbox"
-                                                checked={enabled}
-                                                onChange={(e) => setPresentationConfig(prev => ({
-                                                    ...prev,
-                                                    sidebar: {
-                                                        ...prev.sidebar,
-                                                        vaas: {
-                                                            ...prev.sidebar.vaas,
-                                                            sales: {
-                                                                ...prev.sidebar.vaas.sales,
-                                                                [key]: e.target.checked,
-                                                            },
-                                                        },
-                                                    },
-                                                }))}
-                                            />
-                                            <span>{VAAS_SIDEBAR_LABELS[key as keyof VaaSVisibilityConfig]}</span>
-                                        </label>
-                                    ))}
-                                </div>
-
-                                <h4 className="text-sm font-semibold text-stone-200 mt-5 mb-3">VaaS Content (Sales)</h4>
-                                <div className="space-y-2 text-sm">
-                                    {Object.entries(presentationConfig.content.vaas.sales).map(([key, enabled]) => (
-                                        <label key={key} className="flex items-center gap-2 text-stone-300">
-                                            <input
-                                                type="checkbox"
-                                                checked={enabled}
-                                                onChange={(e) => setPresentationConfig(prev => ({
-                                                    ...prev,
-                                                    content: {
-                                                        ...prev.content,
-                                                        vaas: {
-                                                            ...prev.content.vaas,
-                                                            sales: {
-                                                                ...prev.content.vaas.sales,
-                                                                [key]: e.target.checked,
-                                                            },
-                                                        },
-                                                    },
-                                                }))}
-                                            />
-                                            <span>{VAAS_CONTENT_LABELS[key as keyof VaaSContentVisibilityConfig]}</span>
-                                        </label>
-                                    ))}
+                                <div className="mt-5 rounded-lg border border-stone-700/60 bg-stone-800/40 px-3 py-2 text-xs text-stone-400">
+                                    Sales view mirrors Presentation settings.
                                 </div>
                             </div>
                         </div>

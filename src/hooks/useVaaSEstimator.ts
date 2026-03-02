@@ -67,13 +67,14 @@ export function useVaaSEstimator(): UseVaaSEstimatorReturn {
         const {
             blockComplexity,
             customBlockDurationMonths,
+            engineerHourlyRate,
             internalTeamSize,
-            estRtlDelayWeeks,
             vaasQuotePrice,
             annualBlockCount,
             parallelBlocks,
             marketUpsidePerMonth,
             humanReviewPercent,
+            idleTimePercent,
         } = inputs;
 
         // === Timeline Calculation ===
@@ -104,20 +105,14 @@ export function useVaaSEstimator(): UseVaaSEstimatorReturn {
 
         // === Cost Calculation ===
         // Engineer Monthly Burn Rate (per person)
-        const engineerMonthlyCost = VAAS_CONSTANTS.ENGINEER_SALARY_YEARLY / VAAS_CONSTANTS.MONTHS_PER_YEAR;
+        const engineerMonthlyCost = engineerHourlyRate * VAAS_CONSTANTS.HOURS_PER_MONTH;
 
         // Internal Team Cost (Baseline w/o Delay)
         const baseInternalTeamCost = internalTeamSize * engineerMonthlyCost * traditionalDurationMonths;
 
-        // 1. Cost of Delay (Burn Rate Sensitivity)
-        // Hiring lag (pre-offer) and RTL delay are mutually exclusive.
-        // If hiring lag is present, we do not stack additional RTL delay cost.
-        const effectiveDelayWeeks = internalStartOffset > 0 ? 0 : estRtlDelayWeeks;
-
-        // Delay Cost = Team Size * Weekly Burn * Delay Weeks
-        // Weekly Burn per person = Monthly / 4.33 approx
-        const engineerWeeklyCost = engineerMonthlyCost / VAAS_CONSTANTS.WEEKS_PER_MONTH;
-        const costOfRtlDelay = (internalTeamSize * engineerWeeklyCost) * effectiveDelayWeeks;
+        // 1. Cost of Delay (Removed)
+        // RTL delay is no longer modeled in VaaS.
+        const costOfRtlDelay = 0;
 
         // Total Internal Cost = Base Execution + Delay Waste
         const internalTeamCost = baseInternalTeamCost + costOfRtlDelay;
@@ -127,7 +122,7 @@ export function useVaaSEstimator(): UseVaaSEstimatorReturn {
 
         // 2. Idle Cash Saved (Efficiency)
         // Assumption: ~30% of traditional timeline is idle/wait time
-        const idleTimeFraction = 0.30;
+        const idleTimeFraction = idleTimePercent / 100;
         const idleCashSaved = baseInternalTeamCost * idleTimeFraction;
 
         // 3. Capacity Dividend (Hard Metric)
@@ -142,10 +137,8 @@ export function useVaaSEstimator(): UseVaaSEstimatorReturn {
         const fteMonthsSaved = monthsSaved * internalTeamSize;
 
         // 4. Total Cash Burn Prevented
-        // Combines "Delay Savings" (Avoiding the delay cost) + "Idle Savings" (Avoiding the idle tax)
-        // Note: VaaS eliminates the billing for the delay because it is fixed price scope.
-        // It also eliminates the idle time billing.
-        const totalCashBurnPrevented = costOfRtlDelay + idleCashSaved;
+        // Idle savings only (delay removed from model).
+        const totalCashBurnPrevented = idleCashSaved;
 
         // 5. Optional business upside from faster time-to-market.
         const businessUpsidePerBlock = monthsSaved * marketUpsidePerMonth;
@@ -172,16 +165,12 @@ export function useVaaSEstimator(): UseVaaSEstimatorReturn {
             // VaaS: Linear progress but 2x faster
             const vaasProgress = Math.min((month / safeVaaSDurationMonths) * 100, 100);
 
-            // Internal execution cost accrues only after hiring lag, while delay waste accrues across lag.
+            // Internal execution cost accrues only after hiring lag.
             const executionCostToDate = Math.min(
                 (elapsedExecutionMonths / safeTraditionalDurationMonths) * baseInternalTeamCost,
                 baseInternalTeamCost
             );
-            const effectiveDelayMonths = effectiveDelayWeeks / VAAS_CONSTANTS.WEEKS_PER_MONTH;
-            const delayCostToDate = effectiveDelayWeeks > 0
-                ? Math.min((month / Math.max(effectiveDelayMonths, 0.01)) * costOfRtlDelay, costOfRtlDelay)
-                : 0;
-            const traditionalCost = executionCostToDate + delayCostToDate;
+            const traditionalCost = executionCostToDate;
 
             // VaaS fixed quote accrues linearly until delivery, then flatlines.
             const vaasQuoteAccrued = Math.min((month / safeVaaSDurationMonths) * vaasQuotePrice, vaasQuotePrice);

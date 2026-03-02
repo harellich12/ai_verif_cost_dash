@@ -24,9 +24,9 @@ export const VAAS_CONSTANTS = {
     ] as const,
 
     // Cost Model
-    ENGINEER_SALARY_YEARLY: 200_000, // $ fully loaded (same as ROI)
     MONTHS_PER_YEAR: 12,
     WEEKS_PER_MONTH: 4.33, // Average weeks per month
+    HOURS_PER_MONTH: 4.33 * 40, // 173.2 hours/month (40 hr work week)
 
     // Infrastructure (for reference - not H100s)
     CLOUD_VM_HOURLY: 0.50, // Standard 8-core VM, much cheaper than H100
@@ -47,6 +47,15 @@ export interface VaaSInputConfig {
 }
 
 export const VAAS_INPUT_CONFIGS: Record<string, VaaSInputConfig> = {
+    engineerHourlyRate: {
+        label: 'Engineer Hourly Rate',
+        min: 25,
+        max: 300,
+        step: 1,
+        default: 150,
+        unit: '$/hr',
+        tooltip: 'Hourly wage used for all internal cost calculations in VaaS mode',
+    },
     internalTeamSize: {
         label: 'Internal Team Size',
         min: 1,
@@ -56,14 +65,14 @@ export const VAAS_INPUT_CONFIGS: Record<string, VaaSInputConfig> = {
         unit: 'engineers',
         tooltip: 'Number of verification engineers on your internal team',
     },
-    estRtlDelayWeeks: {
-        label: 'Est. RTL Delay',
+    idleTimePercent: {
+        label: 'Idle Time Factor',
         min: 0,
-        max: 12,
-        step: 1,
-        default: 2,
-        unit: 'weeks',
-        tooltip: 'Expected delay in RTL delivery that burns engineering cash (waiting time). VaaS eliminates this billing risk.',
+        max: 60,
+        step: 5,
+        default: 30,
+        unit: '%',
+        tooltip: 'Estimated internal inefficiency from waiting/blocked time',
     },
     vaasQuotePrice: {
         label: 'VaaS Quote Price',
@@ -104,9 +113,9 @@ export const VAAS_INPUT_CONFIGS: Record<string, VaaSInputConfig> = {
     humanReviewPercent: {
         label: 'Human Review %',
         min: 0,
-        max: 60,
+        max: 90,
         step: 5,
-        default: 20,
+        default: 50,
         unit: '%',
         tooltip: 'Client-side engineer review effort to verify and control AI output quality',
     },
@@ -135,8 +144,9 @@ export interface VaaSInputs {
     blockType: string;
     blockComplexity: BlockComplexity;
     customBlockDurationMonths: number;
+    engineerHourlyRate: number;
     internalTeamSize: number;
-    estRtlDelayWeeks: number; // Replaces monthlyRevenueValue
+    idleTimePercent: number;
     vaasQuotePrice: number;
     annualBlockCount: number;
     parallelBlocks: number;
@@ -176,12 +186,12 @@ export interface VaaSResult {
     weeksSaved: number;
 
     // Cost Comparison
-    internalTeamCost: number;      // Full duration INCLUDING delay impact
+    internalTeamCost: number;      // Full duration internal cost baseline
     vaasCost: number;              // Fixed quote
 
     // Hard Metrics (New)
     fteMonthsSaved: number;        // Capacity Dividend
-    costOfRtlDelay: number;        // Burn Rate (Waste)
+    costOfRtlDelay: number;        // Kept for compatibility (RTL delay removed -> 0)
     totalCashBurnPrevented: number; // Delay Savings + Efficiency Savings (Idle Tax) [Replaces Revenue Gained]
     idleCashSaved: number;         // Kept for chart/logic, represents inefficiency of internal flow
     businessUpsidePerBlock: number; // Optional upside from faster time to market
@@ -217,8 +227,9 @@ export function getDefaultVaaSInputs(): VaaSInputs {
         blockType: VAAS_CONSTANTS.BLOCK_TYPES[0],
         blockComplexity: 'medium',
         customBlockDurationMonths: VAAS_INPUT_CONFIGS.customBlockDurationMonths.default,
+        engineerHourlyRate: VAAS_INPUT_CONFIGS.engineerHourlyRate.default,
         internalTeamSize: VAAS_INPUT_CONFIGS.internalTeamSize.default,
-        estRtlDelayWeeks: VAAS_INPUT_CONFIGS.estRtlDelayWeeks.default,
+        idleTimePercent: VAAS_INPUT_CONFIGS.idleTimePercent.default,
         vaasQuotePrice: VAAS_INPUT_CONFIGS.vaasQuotePrice.default,
         annualBlockCount: VAAS_INPUT_CONFIGS.annualBlockCount.default,
         parallelBlocks: VAAS_INPUT_CONFIGS.parallelBlocks.default,

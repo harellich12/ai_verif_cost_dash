@@ -33,17 +33,11 @@ describe('useVaaSEstimator', () => {
     it('should calculate internal team cost correctly', () => {
         const { result } = renderHook(() => useVaaSEstimator());
 
-        act(() => {
-            result.current.updateInput('hiringLagMonths', 0);
-        });
+        // 3 engineers * (hourly rate * hours/month) * 7 months
+        const engineerMonthlyCost = result.current.inputs.engineerHourlyRate * VAAS_CONSTANTS.HOURS_PER_MONTH;
+        const base = result.current.inputs.internalTeamSize * engineerMonthlyCost * result.current.result.traditionalDurationMonths;
 
-        // 3 engineers * ($200k/12) * 7 months + 2-week RTL delay burn
-        const engineerMonthlyCost = 200_000 / 12;
-        const base = 3 * engineerMonthlyCost * 7;
-        const delay = (3 * (engineerMonthlyCost / VAAS_CONSTANTS.WEEKS_PER_MONTH)) * 2;
-        const expected = base + delay;
-
-        expect(result.current.result.internalTeamCost).toBeCloseTo(expected, 0);
+        expect(result.current.result.internalTeamCost).toBeCloseTo(base, 0);
     });
 
     it('should update block complexity and recalculate', () => {
@@ -82,18 +76,6 @@ describe('useVaaSEstimator', () => {
         const expected = perBlockSavings * 20; // default annualBlockCount
 
         expect(result.current.result.projectedAnnualEfficiency).toBeCloseTo(expected, 0);
-    });
-
-    it('should treat hiring lag and RTL delay as mutually exclusive', () => {
-        const { result } = renderHook(() => useVaaSEstimator());
-
-        act(() => {
-            result.current.updateInput('hiringLagMonths', 2);
-            result.current.updateInput('estRtlDelayWeeks', 8);
-        });
-
-        // Hiring lag active -> RTL delay cost should not be stacked.
-        expect(result.current.result.costOfRtlDelay).toBe(0);
     });
 
     it('should adjust annual time saved by parallel blocks', () => {
@@ -140,8 +122,8 @@ describe('useVaaSEstimator', () => {
     it('should compute client review cost from saved effort base', () => {
         const { result } = renderHook(() => useVaaSEstimator());
 
-        const engineerMonthlyCost = VAAS_CONSTANTS.ENGINEER_SALARY_YEARLY / VAAS_CONSTANTS.MONTHS_PER_YEAR;
-        const expected = result.current.result.fteMonthsSaved * engineerMonthlyCost * 0.20; // default review %
+        const engineerMonthlyCost = result.current.inputs.engineerHourlyRate * VAAS_CONSTANTS.HOURS_PER_MONTH;
+        const expected = result.current.result.fteMonthsSaved * engineerMonthlyCost * (result.current.inputs.humanReviewPercent / 100);
         expect(result.current.result.clientReviewCostPerBlock).toBeCloseTo(expected, 5);
     });
 
