@@ -15,6 +15,7 @@ Provide an interactive planning tool for technical and business stakeholders to 
   - `Admin`: full controls
   - `Presentation`: filtered client view
   - `Sales` (VaaS only): external/traditional verification cost framing
+- Default on load: `VaaS` + `Sales`
 
 ## 3. Tech Stack
 - React + TypeScript + Vite
@@ -34,14 +35,15 @@ Provide an interactive planning tool for technical and business stakeholders to 
 - Default speedup factor: `0.5` (50% faster)
 - Block durations: `small=4`, `medium=7`, `large=12` months
 - Custom block duration supported (`customBlockDurationMonths`)
-- Idle time factor is configurable in cost logic
-- HITL review is applied to saved effort base
+- Idle time factor is configurable in cost logic (`idleTimePercent`)
+- Engineer hourly rate default: `150` ($/hr) for VaaS calculations
+- HITL review is applied to saved effort base (slider range 0–90%)
 
 ## 6. Sales View (VaaS-only) Contract
 Sales mode reuses VaaS layout but remaps displayed economics to external/traditional cost basis:
 - `salesExternalCostPerBlock = internalTeamCost + idleCashSaved`
 - `salesExternalCostAnnual = salesExternalCostPerBlock * annualBlockCount`
-- `salesDelayCostPerBlock = costOfRtlDelay`
+- `salesDelayCostPerBlock = 0` (RTL delay not modeled)
 - `salesIdleCostPerBlock = idleCashSaved`
 - `salesActiveCostPerBlock = internalTeamCost`
 - `salesMonthlyData`: external/active/idle/progress series

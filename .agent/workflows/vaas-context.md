@@ -12,7 +12,7 @@ Model timeline and cost outcomes for VaaS versus internal verification execution
   - `blockComplexity` in `small|medium|large|custom`
   - `customBlockDurationMonths` when `custom`
 - Team and cost:
-  - `engineerHourlyRate`
+  - `engineerHourlyRate` (default 150 $/hr)
   - `internalTeamSize`
   - `hiringLagMonths`
 - Efficiency:
@@ -22,7 +22,7 @@ Model timeline and cost outcomes for VaaS versus internal verification execution
   - `annualBlockCount`
   - `parallelBlocks`
   - `marketUpsidePerMonth`
-  - `humanReviewPercent`
+  - `humanReviewPercent` (range 0–90%)
 - Optional benchmark:
   - `isBenchmarkMode`
   - `benchmarkInternalDays`
@@ -62,6 +62,7 @@ Sales mode is display-only framing over existing VaaS calculations:
 - Remap labels/values to external/traditional cost framing
 - Timeline chart in Sales mode emphasizes traditional path
 - Idle cost chart in Sales mode removes VaaS bar
+- User Manual includes a first tab titled “Reference Section” with VaaS assumptions and idle-time reasons
 
 ## 6. Exports
 - VaaS Excel supports view-based branching:
