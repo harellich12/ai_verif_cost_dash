@@ -113,6 +113,8 @@ Tooltips (`?`) are available for sliders and key value fields.
   - External Cost / Year
   - Active Verification Cost
   - Idle Time Cost
+  - Annual Idle Cost (Annual Verification Workload card): `annualWorkloadHours * engineerHourlyRate * idleTimePercent`
+    (parallel-adjusted because it reuses the card's annual workload hours)
   - Traditional timeline emphasis
 
 ### 5.3 VaaS Economics Logic (high level)

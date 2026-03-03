@@ -1,10 +1,13 @@
 import { useState } from 'react';
 import { TrendingUp, Calendar, Zap } from 'lucide-react';
 import { VaaSResult } from '../vaasConstants';
+import { formatCurrency } from '../utils/format';
 
 interface BenchmarkBadgeProps {
     annualBlockCount: number;
     parallelBlocks?: number;
+    engineerHourlyRate: number;
+    idleTimePercent: number;
     result: VaaSResult;
     viewMode?: 'admin' | 'presentation' | 'sales';
 }
@@ -12,6 +15,8 @@ interface BenchmarkBadgeProps {
 export function BenchmarkBadge({
     annualBlockCount,
     parallelBlocks = 1,
+    engineerHourlyRate,
+    idleTimePercent,
     result,
     viewMode = 'admin',
 }: BenchmarkBadgeProps) {
@@ -25,9 +30,12 @@ export function BenchmarkBadge({
     const annualExternalDaysLoad = (externalDurationMonths * 30 * annualBlockCount) / Math.max(1, parallelBlocks);
     const annualHoursSaved = annualDaysSaved * 8;
     const annualExternalHours = annualExternalDaysLoad * 8;
+    const idleTimeFraction = idleTimePercent / 100;
+    const annualIdleCost = annualExternalHours * engineerHourlyRate * idleTimeFraction;
 
     // Convert to engineer-months (~160 hours per month)
     const engineerMonthsSaved = annualHoursSaved / 160;
+    const annualExternalEngMonths = annualExternalHours / 160;
     const formatOneDecimal = (value: number) => (Math.round(value * 10) / 10).toFixed(1);
 
     return (
@@ -61,7 +69,7 @@ export function BenchmarkBadge({
             )}
 
             {/* Results */}
-            <div className="grid grid-cols-3 gap-3">
+            <div className={`${isSales ? 'grid grid-cols-2 md:grid-cols-4 gap-3' : 'grid grid-cols-3 gap-3'}`}>
                 <div className="text-center p-2 bg-stone-800/50 rounded-lg">
                     <div className="text-lg font-bold text-amber-400">
                         {formatOneDecimal(isSales ? annualExternalDaysLoad : annualDaysSaved)}
@@ -76,10 +84,19 @@ export function BenchmarkBadge({
                 </div>
                 <div className="text-center p-2 bg-stone-800/50 rounded-lg">
                     <div className="text-lg font-bold text-amber-400">
-                        {formatOneDecimal(isSales ? annualExternalHours / 160 : engineerMonthsSaved)}
+                        {formatOneDecimal(isSales ? annualExternalEngMonths : engineerMonthsSaved)}
                     </div>
                     <div className="text-xs text-stone-500">Eng-Months</div>
                 </div>
+                {isSales && (
+                    <div className="text-center p-2 bg-stone-800/50 rounded-lg">
+                        <div className="text-lg font-bold text-amber-400">
+                            {formatCurrency(annualIdleCost, true)}
+                        </div>
+                        <div className="text-xs text-stone-500">Idle Cost / Year</div>
+                        <div className="text-[10px] text-stone-500">Rate x Idle% x Hours</div>
+                    </div>
+                )}
             </div>
 
             {/* Efficiency Badge */}
@@ -87,7 +104,7 @@ export function BenchmarkBadge({
                 <Zap size={12} />
                 <span>
                     {isSales
-                        ? `Equivalent to ${formatOneDecimal(annualExternalHours / 160)} engineer-months of external verification load annually`
+                        ? `Equivalent to ${formatOneDecimal(annualExternalEngMonths)} engineer-months of external verification load annually`
                         : `Equivalent to ${formatOneDecimal(engineerMonthsSaved)} engineer-months of capacity annually`}
                 </span>
             </div>

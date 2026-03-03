@@ -75,6 +75,8 @@ Use Sales mode when presenting **client external verification costs regardless o
 *   `External Cost / Year = External Cost / Block × annualBlockCount`
 *   `Active Verification Cost = internalTeamCost`
 *   `Idle Time Cost = idleCashSaved`
+*   `Annual Idle Cost (workload card) = annualWorkloadHours × engineerHourlyRate × idleTimePercent`
+    *(parallel-adjusted because annualWorkloadHours is divided by parallelBlocks in the card)*
 *   `Delay Cost = costOfRtlDelay`
 
 ---

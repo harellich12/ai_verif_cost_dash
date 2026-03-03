@@ -478,6 +478,8 @@ function App() {
                                         <BenchmarkBadge
                                             annualBlockCount={vaasCalc.inputs.annualBlockCount}
                                             parallelBlocks={vaasCalc.inputs.parallelBlocks}
+                                            engineerHourlyRate={vaasCalc.inputs.engineerHourlyRate}
+                                            idleTimePercent={vaasCalc.inputs.idleTimePercent}
                                             result={vaasCalc.result}
                                             viewMode={viewMode}
                                         />
