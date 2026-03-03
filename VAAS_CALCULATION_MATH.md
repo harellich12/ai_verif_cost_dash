@@ -163,6 +163,12 @@ The estimator also returns sales-oriented outputs used by VaaS **Sales mode**:
 - `idleCost = idleCost`
 - `progress = traditionalProgress`
 
+7. Sales Annual Verification Workload card (UI metric):
+- `annualWorkloadDays = ((traditionalDurationMonths + internalStartOffset) * 30 * annualBlockCount) / max(1, parallelBlocks)`
+- `annualWorkloadHours = annualWorkloadDays * 8`
+- `annualIdleCost = annualWorkloadHours * engineerHourlyRate * idleTimeFraction`
+- This is parallel-adjusted because it reuses the card's annual workload hours.
+
 ## 9. Default-Value Worked Example
 
 Using defaults in `getDefaultVaaSInputs()`:
